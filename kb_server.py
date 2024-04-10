@@ -32,7 +32,7 @@ $search_results$
 $output_format_instructions$
 """
 
-
+boto3.setup_default_session(profile_name='br')
 # declare model id for calling RetrieveAndGenerate API
 # import boto3
 def sample_kb_call(input, vector_search_configuration=default_vector_search_configuration):
