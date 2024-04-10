@@ -15,73 +15,7 @@ import boto3
 import json
 from flask import Flask, request, jsonify
 
-
-def sample_invoke_model():
-    bedrock = boto3.client(service_name='bedrock-runtime', region_name="us-west-2")
-    print(bedrock)
-    body = json.dumps({
-        "prompt": "\n\nHuman:explain black holes to 8th graders\n\nAssistant:",
-        "max_tokens_to_sample": 300,
-        "temperature": 0.1,
-        "top_p": 0.9,
-    })
-
-    modelId = 'anthropic.claude-v2'
-    accept = 'application/json'
-    contentType = 'application/json'
-
-    response = bedrock.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
-
-    response_body = json.loads(response.get('body').read())
-    # text
-    print(response_body.get('completion'))
-
-
 default_vector_search_configuration = {
-    # 'filter': {
-    #     # 'andAll': [
-    #     #     {'... recursive ...'},
-    #     # ],
-    #     # 'equals': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # },
-    #     # 'greaterThan': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # },
-    #     # 'greaterThanOrEquals': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # },
-    #     # 'in': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # },
-    #     # 'lessThan': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # },
-    #     # 'lessThanOrEquals': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # },
-    #     # 'notEquals': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # },
-    #     # 'notIn': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # },
-    #     # 'orAll': [
-    #     #     {'... recursive ...'},
-    #     # ],
-    #     # 'startsWith': {
-    #     #     'key': 'string',
-    #     #     'value': {...} | [...] | 123 | 123.4 | 'string' | True | None
-    #     # }
-    # },
     'numberOfResults': 2,
     'overrideSearchType': 'HYBRID'  # search to hybrid
 }
@@ -104,8 +38,8 @@ def sample_kb_call(input, vector_search_configuration=default_vector_search_conf
     # model_id = "anthropic.claude-instant-v1"
     model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
     model_arn = f'arn:aws:bedrock:{region}::foundation-model/{model_id}'
-    print(model_arn)
-    ## call Knowledge-base
+    # print(model_arn)
+    # ## call Knowledge-base
     response = bedrock_agent_runtime.retrieve_and_generate(
         input={
             'text': input
@@ -128,20 +62,19 @@ def sample_kb_call(input, vector_search_configuration=default_vector_search_conf
     )
 
     output = response['output']
-    print(output)
-    print(json.dumps(response, indent=2))
+    return output
 
 
 app = Flask(__name__)
+# app.config['JSON_AS_ASCII'] = False
+app.json.ensure_ascii = False  # 解决中文乱码问题
 
 
-@app.route('/add', methods=['POST'])
-def add():
+@app.route('/suggest', methods=['POST'])
+def suggest():
     data = request.get_json()
-    a = data['a']
-    b = data['b']
-    result = a + b
-    return jsonify({'result': result})
+    input = data['input']
+    return jsonify({'result': sample_kb_call(input)})
 
 
 if __name__ == '__main__':
