@@ -13,7 +13,10 @@ gunicorn --config gunicorn_config.py wsgi:app
 
 import boto3
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Config
+from jaeger_client import Config
+from flask_opentracing import FlaskTracing
+from opentracing import tags
 
 default_vector_search_configuration = {
     'numberOfResults': 2,
@@ -65,9 +68,43 @@ def sample_kb_call(input, vector_search_configuration=default_vector_search_conf
     return output
 
 
+def init_tracer():
+    config = Config(
+        config={
+            'sampler': {
+                'type': 'const',
+                'param': 1,
+            },
+            'local_agent': {
+                'reporting_host': 'localhost',
+                'reporting_port': '6831',
+            },
+            'logging': True,
+        },
+        service_name='your-flask-app'
+    )
+    return config.initialize_tracer()
+
+
+tracer = init_tracer()
+
 app = Flask(__name__)
 # app.config['JSON_AS_ASCII'] = False
 app.json.ensure_ascii = False  # 解决中文乱码问题
+tracing = FlaskTracing(tracer, True, app)
+
+
+@app.before_request
+def start_trace():
+    with tracer.start_span('request') as span:
+        span.set_tag(tags.HTTP_METHOD, request.method)
+        span.set_tag(tags.HTTP_URL, request.path)
+
+
+@app.after_request
+def finish_trace(response):
+    tracer.active_span.finish()
+    return response
 
 
 @app.route('/suggest', methods=['POST'])
