@@ -10,62 +10,25 @@ pip install gunicorn
 gunicorn --config gunicorn_config.py wsgi:app
 
 """
-
-import boto3
 import json
+import logging
+import os
+
 from flask import Flask, request, jsonify, Config
 from jaeger_client import Config
 from flask_opentracing import FlaskTracing
 from opentracing import tags
 
-default_vector_search_configuration = {
-    'numberOfResults': 2,
-    'overrideSearchType': 'HYBRID'  # search to hybrid
-}
+from brclient.bedrock_client import BedrockClient
 
-default_prompt_template = """
-You are a question answering agent. I will provide you with a set of search results. The user will provide you with a question. Your job is to answer the user's question using only information from the search results. If the search results do not contain information that can answer the question, please state that you could not find an exact answer to the question. Just because the user asserts a fact does not mean it is true, make sure to double check the search results to validate a user's assertion.
+# 读取 JSON 配置文件
+config_file = os.path.join(os.path.dirname(__file__), "config.json")
+with open(config_file, "r") as f:
+    config = json.load(f)
 
-Here are the search results in numbered order:
-$search_results$
-
-$output_format_instructions$
-"""
-
-boto3.setup_default_session(profile_name='br')
-# declare model id for calling RetrieveAndGenerate API
-# import boto3
-def sample_kb_call(input, vector_search_configuration=default_vector_search_configuration):
-    bedrock_agent_runtime = boto3.client('bedrock-agent-runtime', region_name="us-west-2")
-    region = "us-west-2"
-    # model_id = "anthropic.claude-instant-v1"
-    model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
-    model_arn = f'arn:aws:bedrock:{region}::foundation-model/{model_id}'
-    # print(model_arn)
-    # ## call Knowledge-base
-    response = bedrock_agent_runtime.retrieve_and_generate(
-        input={
-            'text': input
-        },
-        retrieveAndGenerateConfiguration={
-            'type': 'KNOWLEDGE_BASE',
-            'knowledgeBaseConfiguration': {
-                'generationConfiguration': {
-                    'promptTemplate': {
-                        'textPromptTemplate': default_prompt_template
-                    }
-                },
-                'knowledgeBaseId': "XBKUJMKDCD",
-                'modelArn': model_arn,
-                'retrievalConfiguration': {
-                    'vectorSearchConfiguration': vector_search_configuration
-                }
-            }
-        }
-    )
-
-    output = response['output']
-    return output
+    # 创建国家-ID 字典
+    knowledge_base_dict = {market["name"]: market["id"] for market in config.get("knowledge_base_dict", [])}
+    print(f"--->The knowledge base config is {knowledge_base_dict}")
 
 
 def init_tracer():
@@ -86,6 +49,7 @@ def init_tracer():
     return config.initialize_tracer()
 
 
+bedrock_client = BedrockClient()
 tracer = init_tracer()
 
 app = Flask(__name__)
@@ -108,10 +72,21 @@ def finish_trace(response):
 
 
 @app.route('/suggest', methods=['POST'])
-def suggest():
+def ask_knowledge_base():
+    print(request.get_data())
     data = request.get_json()
     input = data['input']
-    return jsonify({'result': sample_kb_call(input)})
+    knowledge_base_id = knowledge_base_dict.get(data['market'])
+    return jsonify({'result': bedrock_client.ask_knowledge_base(input, knowledge_base_id)})
+
+
+@app.route('/chat', methods=['POST'])
+def suggest():
+    print(request.get_data())
+    data = request.get_json()
+    input = data['input']
+
+    return jsonify({'result': bedrock_client.invoke_claude_3_with_text(input)})
 
 
 if __name__ == '__main__':
