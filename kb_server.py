@@ -10,9 +10,11 @@ pip install gunicorn
 gunicorn --config gunicorn_config.py wsgi:app
 
 """
+import base64
 import json
 import logging
 import os
+from functools import wraps
 
 from flask import Flask, request, jsonify, Config
 from jaeger_client import Config
@@ -29,6 +31,29 @@ with open(config_file, "r") as f:
     # 创建国家-ID 字典
     knowledge_base_dict = {market["name"]: market["id"] for market in config.get("knowledge_base_dict", [])}
     print(f"--->The knowledge base config is {knowledge_base_dict}")
+    auth_username = config.get("username")
+    auth_password = config.get("password")
+
+
+def require_auth(func):
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return {'message': 'Authentication required'}, 401
+
+        auth_token = auth_header.split(' ')[1]
+        print(f"auth_token {auth_token}")
+        decoded_token = base64.b64decode(auth_token).decode('utf-8')
+        username, password = decoded_token.split(':')
+        print(f"Username {username} and password {password}")
+        # Replace this with your own authentication logic
+        if username != auth_username or password != auth_password:
+            return {'message': 'Invalid credentials'}, 401
+
+        return func(*args, **kwargs)
+
+    return decorated
 
 
 def init_tracer():
@@ -72,6 +97,7 @@ def finish_trace(response):
 
 
 @app.route('/suggest', methods=['POST'])
+@require_auth
 def ask_knowledge_base():
     print(request.get_data())
     data = request.get_json()
@@ -81,6 +107,7 @@ def ask_knowledge_base():
 
 
 @app.route('/chat', methods=['POST'])
+@require_auth
 def suggest():
     print(request.get_data())
     data = request.get_json()
