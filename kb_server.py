@@ -39,6 +39,7 @@ def require_auth(func):
     @wraps(func)
     def decorated(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
+        app.logger.info(f"auth_header {auth_header}")
         if not auth_header:
             return {'message': 'Authentication required'}, 401
 
