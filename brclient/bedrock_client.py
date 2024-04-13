@@ -1,4 +1,5 @@
 import json
+import logging
 
 import boto3
 
@@ -6,6 +7,8 @@ import os
 
 from botocore.client import logger
 from botocore.exceptions import ClientError
+
+logger = logging.getLogger("bedrock")
 
 default_vector_search_configuration = {
     'numberOfResults': 2,
@@ -43,9 +46,9 @@ class BedrockClient:
         sk = os.getenv("SECRET_KEY", DEFAULT_SK)
 
         # 在程序中使用这些参数
-        print(f"Region: {self.region}")
-        print(f"Access Key: {ak}")
-        print(f"Secret Key: {sk}")
+        logger.info(f"Region: {self.region}")
+        logger.info(f"Access Key: {ak}")
+        logger.debug(f"Secret Key: {sk}")
 
         return boto3.Session(
             aws_access_key_id=ak,
@@ -91,11 +94,11 @@ class BedrockClient:
             output_tokens = result["usage"]["output_tokens"]
             output_list = result.get("content", [])
 
-            print("Invocation details:")
-            print(f"- The input length is {input_tokens} tokens.")
-            print(f"- The output length is {output_tokens} tokens.")
+            logger.debug("Invocation details:")
+            logger.debug(f"- The input length is {input_tokens} tokens.")
+            logger.debug(f"- The output length is {output_tokens} tokens.")
 
-            print(f"- The model returned {len(output_list)} response(s):")
+            logger.debug(f"- The model returned {len(output_list)} response(s):")
             for output in output_list:
                 print(output["text"])
 
@@ -110,7 +113,8 @@ class BedrockClient:
             raise
 
     def ask_knowledge_base(self, input, knowledge_base_id,
-                           vector_search_configuration=default_vector_search_configuration):
+                           vector_search_configuration=default_vector_search_configuration,
+                           prompt_template=default_prompt_template):
         model_id = bedrock_sonnet_model_id
         model_arn = f'arn:aws:bedrock:{self.region}::foundation-model/{model_id}'
 
@@ -123,7 +127,7 @@ class BedrockClient:
                 'knowledgeBaseConfiguration': {
                     'generationConfiguration': {
                         'promptTemplate': {
-                            'textPromptTemplate': default_prompt_template
+                            'textPromptTemplate': prompt_template
                         }
                     },
                     'knowledgeBaseId': knowledge_base_id,  # "XBKUJMKDCD",

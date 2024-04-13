@@ -23,6 +23,10 @@ from opentracing import tags
 
 from brclient.bedrock_client import BedrockClient
 
+logger = logging.getLogger("flask.app")
+logging.basicConfig(level=logging.INFO)
+# print(logger)
+logger.info('Started')
 # 读取 JSON 配置文件
 config_file = os.path.join(os.path.dirname(__file__), "config.json")
 with open(config_file, "r") as f:
@@ -30,7 +34,7 @@ with open(config_file, "r") as f:
 
     # 创建国家-ID 字典
     knowledge_base_dict = {market["name"]: market["id"] for market in config.get("knowledge_base_dict", [])}
-    print(f"--->The knowledge base config is {knowledge_base_dict}")
+    logger.debug(f"--->The knowledge base config is {knowledge_base_dict}")
     auth_username = config.get("username")
     auth_password = config.get("password")
 
@@ -39,15 +43,15 @@ def require_auth(func):
     @wraps(func)
     def decorated(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
-        app.logger.info(f"auth_header {auth_header}")
+        logger.debug(f"auth_header {auth_header}")
         if not auth_header:
             return {'message': 'Authentication required'}, 401
 
         auth_token = auth_header.split(' ')[1]
-        print(f"auth_token {auth_token}")
+        logger.debug(f"auth_token {auth_token}")
         decoded_token = base64.b64decode(auth_token).decode('utf-8')
         username, password = decoded_token.split(':')
-        print(f"Username {username} and password {password}")
+        logger.debug(f"Username {username} and password {password}")
         # Replace this with your own authentication logic
         if username != auth_username or password != auth_password:
             return {'message': 'Invalid credentials'}, 401
@@ -104,7 +108,13 @@ def ask_knowledge_base():
     data = request.get_json()
     input = data['input']
     knowledge_base_id = knowledge_base_dict.get(data['market'])
-    return jsonify({'result': bedrock_client.ask_knowledge_base(input, knowledge_base_id)})
+    # prompt_template = data['prompt']
+    if "prompt" in data:
+        return jsonify(
+            {'result': bedrock_client.ask_knowledge_base(input, knowledge_base_id, prompt_template=data['prompt'])})
+    else:
+        return jsonify(
+            {'result': bedrock_client.ask_knowledge_base(input, knowledge_base_id)})
 
 
 @app.route('/chat', methods=['POST'])
