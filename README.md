@@ -12,14 +12,86 @@ export SECRET_KEY=xxx
 
 http://localhost:5000¬
 
+> 我们如何解决不同语言不同地区的知识库的差异？  [采用metadata和filter来区分](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-ds.html#kb-ds-metadata)
+
+
 ```bash
 
-# 测试访问知识库
+## 测试访问知识库
+
+
+
+## 从英文资料获取的答案
+curl -X POST \
+     http://localhost:5000/suggest \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Basic xxxxx=" \
+     -d @- << EOF
+{
+  "input": "购买后几天可以退货?",
+  "filter": {
+        "equals": {
+            "key": "language",
+            "value": "japanese"
+        }
+    }
+}
+EOF
+
+# answer
+{
+  "result": {
+    "text": "根据搜索结果,我没有找到关于这款产品的退货政策的具体信息。搜索结果主要介绍了产品的一些技术参数和特点,但没有提及退货期限。"
+  }
+}
+
+
+## 从日语资料库获取的答案
+curl -X POST \
+     http://localhost:5000/suggest \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Basic xxxxx=" \
+     -d @- << EOF
+{
+  "input": "购买后几天可以退货?",
+  "filter": {
+        "equals": {
+            "key": "language",
+            "value": "english"
+        }
+    }
+}
+EOF
+# answer
+{
+  "result": {
+    "text": "根据搜索结果,如果您想退货,必须在收到货物后的30天内申请退货。一旦收到退货包裹,Jackery将在2-4个工作日内将款项退还至您的原始付款方式。"
+  }
+}
+
+
+
+
 curl -X POST \
      -H "Content-Type: application/json" \
-     -H "Authorization: Basic cccc=xxx" \
-     -d '{"input": "翻译以下内容为日语：购买后几天可以退货?"}' \
-     http://localhost:5000/chat
+     -H "Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=" \
+     -d '{"input": "翻译以下内容为日语：购买后几天可以退货?", "market":"Japan"}' \
+     http://localhost:5000/suggest
+     
+     
+#with prompt
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=" \
+     -d '{"input": "翻译以下内容为日语：购买后几天可以退货?", "market":"Japan", "prompt":"test"}' \
+     http://localhost:5000/suggest
+
+# without tempalte
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=" \
+     -d '{"input": "购买后几天可以退货?", "market":"Japan"}' \
+     http://localhost:5000/suggest
      
 # 测试直接调用模型
 curl -X POST -H "Content-Type: application/json" -d '{"input": "翻译以下内容为日语：购买后几天可以退货?"}' http://localhost:5000/chat

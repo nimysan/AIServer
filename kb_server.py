@@ -25,16 +25,13 @@ from brclient.bedrock_client import BedrockClient
 
 logger = logging.getLogger("flask.app")
 logging.basicConfig(level=logging.INFO)
-# print(logger)
-logger.info('Started')
-# 读取 JSON 配置文件
+
+# read kb config and set up the server username and password
 config_file = os.path.join(os.path.dirname(__file__), "config.json")
 with open(config_file, "r") as f:
     config = json.load(f)
-
-    # 创建国家-ID 字典
-    knowledge_base_dict = {market["name"]: market["id"] for market in config.get("knowledge_base_dict", [])}
-    logger.debug(f"--->The knowledge base config is {knowledge_base_dict}")
+    knowledge_base = config.get('knowledge-base')
+    logger.info(f"--->The knowledge base id is: {knowledge_base}")
     auth_username = config.get("username")
     auth_password = config.get("password")
 
@@ -106,15 +103,22 @@ def finish_trace(response):
 def ask_knowledge_base():
     print(request.get_data())
     data = request.get_json()
-    input = data['input']
-    knowledge_base_id = knowledge_base_dict.get(data['market'])
+    question = data['input']
+    knowledge_base_id = knowledge_base
+    print("The knowledge base is " + knowledge_base_id)
+
+    search_filter = {}
+    if "filter" in data:
+        search_filter = data["filter"]
+        logger.info(f"filter is {search_filter}")
     # prompt_template = data['prompt']
     if "prompt" in data:
         return jsonify(
-            {'result': bedrock_client.ask_knowledge_base(input, knowledge_base_id, prompt_template=data['prompt'])})
+            {'result': bedrock_client.ask_knowledge_base(question, knowledge_base_id, search_filter,
+                                                         prompt_template=data['prompt'])})
     else:
         return jsonify(
-            {'result': bedrock_client.ask_knowledge_base(input, knowledge_base_id)})
+            {'result': bedrock_client.ask_knowledge_base(question, knowledge_base_id, search_filter)})
 
 
 @app.route('/chat', methods=['POST'])

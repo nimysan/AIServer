@@ -10,9 +10,10 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger("bedrock")
 
+# default search configuration for kb recall
 default_vector_search_configuration = {
-    'numberOfResults': 2,
-    'overrideSearchType': 'HYBRID'  # search to hybrid
+    'numberOfResults': 4,
+    'overrideSearchType': 'HYBRID'
 }
 
 default_prompt_template = """
@@ -69,7 +70,7 @@ class BedrockClient:
         client = self.bedrock_runtime
 
         # Invoke Claude 3 with the text prompt
-        model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+        model_id = bedrock_sonnet_model_id
 
         try:
             response = client.invoke_model(
@@ -112,15 +113,23 @@ class BedrockClient:
             )
             raise
 
-    def ask_knowledge_base(self, input, knowledge_base_id,
+    def ask_knowledge_base(self, question, knowledge_base_id, vector_search_filter=None,
                            vector_search_configuration=default_vector_search_configuration,
                            prompt_template=default_prompt_template):
         model_id = bedrock_sonnet_model_id
         model_arn = f'arn:aws:bedrock:{self.region}::foundation-model/{model_id}'
 
+        search_config = default_vector_search_configuration
+        if vector_search_filter and len(vector_search_filter) > 0:
+            search_config = default_vector_search_configuration.copy()
+            search_config['filter'] = vector_search_filter
+
+        # search_config.update(filter)
+        logger.info(f"vector_search_configuration {search_config}")
+
         response = self.bedrock_agent_runtime.retrieve_and_generate(
             input={
-                'text': input
+                'text': question
             },
             retrieveAndGenerateConfiguration={
                 'type': 'KNOWLEDGE_BASE',
@@ -130,10 +139,10 @@ class BedrockClient:
                             'textPromptTemplate': prompt_template
                         }
                     },
-                    'knowledgeBaseId': knowledge_base_id,  # "XBKUJMKDCD",
+                    'knowledgeBaseId': knowledge_base_id,
                     'modelArn': model_arn,
                     'retrievalConfiguration': {
-                        'vectorSearchConfiguration': vector_search_configuration
+                        'vectorSearchConfiguration': search_config
                     }
                 }
             }

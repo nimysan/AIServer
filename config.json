@@ -1,18 +1,6 @@
 {
-  "knowledge_base_dict": [
-    {
-      "name": "Japan",
-      "id": "XBKUJMKDCD"
-    },
-    {
-      "name": "US",
-      "id": "XBKUJMKDCD"
-    },
-    {
-      "name": "China",
-      "id": "XBKUJMKDCD"
-    }
-  ],
+  "knowledge-base": "EJBZDFNZNO",
   "username": "admin",
   "password": "password123"
 }
+
