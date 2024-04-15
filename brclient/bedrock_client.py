@@ -147,6 +147,6 @@ class BedrockClient:
                 }
             }
         )
-
-        output = response['output']
-        return output
+        logger.info(json.dumps(response, indent=4))
+        # output = response['output']
+        return response
