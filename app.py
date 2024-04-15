@@ -14,13 +14,16 @@ import base64
 import json
 import logging
 import os
+from datetime import datetime
 from functools import wraps
 
 from flask import Flask, request, jsonify, Config
 from jaeger_client import Config
 from flask_opentracing import FlaskTracing
+from opensearchpy import AWSV4SignerAuth
 from opentracing import tags
 
+from behavior_log import OpenSearchBehaviorLogRepository, BehaviorLog
 from brclient.bedrock_client import BedrockClient
 
 logger = logging.getLogger("flask.app")
@@ -77,6 +80,10 @@ def init_tracer():
 
 
 bedrock_client = BedrockClient()
+
+# initialize behavior log repository
+behavior_log_repository = OpenSearchBehaviorLogRepository("mpo4otqr20inv25sgw3.us-west-2.aoss.amazonaws.com")
+
 tracer = init_tracer()
 
 app = Flask(__name__)
@@ -127,8 +134,23 @@ def suggest():
     print(request.get_data())
     data = request.get_json()
     input = data['input']
-
     return jsonify({'result': bedrock_client.invoke_claude_3_with_text(input)})
+
+
+@app.route('/log', methods=['POST'])
+@require_auth
+def log():
+    # print(request.get_data())
+    data = request.get_json()
+    # logger.info(data)
+    behavior_log = BehaviorLog(
+        user_id=data['user'],  # 客服
+        action=data['action'],  # 采纳/需优化
+        timestamp=datetime.now().isoformat(),  # 时间
+        input_data=data['input_data']
+    )
+    logger.info(f"---------> {behavior_log}")
+    return jsonify({'result': behavior_log_repository.store_log(behavior_log)})
 
 
 if __name__ == '__main__':
