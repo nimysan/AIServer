@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 import boto3
 
@@ -95,6 +96,8 @@ class BedrockClient:
     def ask_knowledge_base(self, question, knowledge_base_id, vector_search_filter=None,
                            vector_search_configuration=default_vector_search_configuration,
                            prompt_template=default_prompt_template):
+        start_time = time.time()
+
         model_id = bedrock_sonnet_model_id
         model_arn = f'arn:aws:bedrock:{self.region}::foundation-model/{model_id}'
 
@@ -126,6 +129,10 @@ class BedrockClient:
                 }
             }
         )
-        logger.info(json.dumps(response, indent=4))
-        # output = response['output']
-        return response
+        end_time = time.time()  # 记录函数执行结束的时间
+        execution_time = end_time - start_time  # 计算函数执行时间
+        return {
+            'cost_time': execution_time,
+            'response': response,
+            'prompt': prompt_template
+        }
