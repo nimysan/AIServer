@@ -93,11 +93,21 @@ class BedrockClient:
             )
             raise
 
+    def refineQuestion(self, question):
+        refine_question = question
+        if len(question) >= 900:
+            summary_response = self.invoke_claude_3_with_text(
+                f"Compress the following content about Jackery customer service inquiries into a 800-character response, without including any explanatory phrases. Just provide the condensed content directly. content is:{question}");
+            # print(summary_response)
+            refine_question = summary_response['content'][0]['text']
+            # print(f"---------->{refine_question}")
+        return refine_question;
+
     def ask_knowledge_base(self, question, knowledge_base_id, vector_search_filter=None,
                            vector_search_configuration=default_vector_search_configuration,
                            prompt_template=default_prompt_template):
         start_time = time.time()
-
+        refine_question = self.refineQuestion(question)
         model_id = bedrock_sonnet_model_id
         model_arn = f'arn:aws:bedrock:{self.region}::foundation-model/{model_id}'
 
@@ -111,7 +121,7 @@ class BedrockClient:
 
         response = self.bedrock_agent_runtime.retrieve_and_generate(
             input={
-                'text': question
+                'text': refine_question
             },
             retrieveAndGenerateConfiguration={
                 'type': 'KNOWLEDGE_BASE',
