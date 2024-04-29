@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create an ALB, Target Group, Security Groups and an EC2 instance with a user data script
+
+Parameters:
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+    ConstraintDescription: must be a valid EC2 instance type.
+
+  LatestAmiId:
+    Description: AMI for EC2 Instance （please use ubuntu 22.04)
+    Type: String
+    Default: 'ami-080e1f13689e07408'
+
+  KeyPairName:
+    Description: Key pair name
+    Type: AWS::EC2::KeyPair::KeyName
+
+  GitRepo:
+    Description: Git repository URL
+    Type: String
+    Default: 'https://github.com/nimysan/AIServer.git'
+
+  VpcId:
+    Description: Select an existing VPC
+    Type: AWS::EC2::VPC::Id
+
+  PublicSubnet1:
+    Description: Select an existing public subnet
+    Type: AWS::EC2::Subnet::Id
+
+  PublicSubnet2:
+    Description: Select another existing public subnet
+    Type: AWS::EC2::Subnet::Id
+
+Resources:
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to ALB
+      VpcId: !Ref 'VpcId'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http from ALB and SSH
+      VpcId: !Ref 'VpcId'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5000
+          ToPort: 5000
+          SourceSecurityGroupId: !Ref 'ALBSecurityGroup'
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      SecurityGroups:
+        - !Ref 'ALBSecurityGroup'
+      Subnets:
+        - !Ref 'PublicSubnet1'
+        - !Ref 'PublicSubnet2'
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref 'ALBTargetGroup'
+      LoadBalancerArn: !Ref 'ALB'
+      Port: 80
+      Protocol: HTTP # 添加 Protocol 属性
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckPath: /
+      Port: 5000
+      Protocol: HTTP
+      TargetType: instance
+      VpcId: !Ref 'VpcId'
+      Targets:
+        - Id:
+            Ref: EC2Instance
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref 'LatestAmiId'
+      InstanceType: !Ref 'InstanceType'
+      SecurityGroupIds:
+        - !Ref 'EC2SecurityGroup'
+      SubnetId: !Ref 'PublicSubnet1'
+      KeyName: !Ref 'KeyPairName'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeType: gp3
+      UserData:
+        Fn::Base64:
+          !Sub |
+          #!/bin/bash
+          apt-get update
+          apt-get install -y git
+          git clone ${GitRepo}
+
+Outputs:
+
+  ALBDNSName:
+    Description: DNS Name of the ALB
+    Value: !GetAtt 'ALB.DNSName'
+    Export:
+      Name: ALBDNSName
