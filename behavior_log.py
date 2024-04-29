@@ -1,11 +1,11 @@
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from flask import logging
 from opensearchpy import OpenSearch, AWSV4SignerAuth, RequestsHttpConnection
 
 from boto3_client import get_boto3_config
-logger = logging.getLogger("flask.app")
+logger = logging.getLogger("app.opensearch")
 @dataclass
 class BehaviorLog:
     user_id: str

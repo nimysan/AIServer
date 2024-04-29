@@ -1,6 +1,7 @@
 {
   "knowledge-base": "9SLNJ60S7Y",
   "username": "admin",
-  "password": "password123"
+  "password": "password123",
+  "opensearch-host": "https://xxx.domain.com/xxxx/xxxx"
 }
 

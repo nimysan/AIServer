@@ -38,6 +38,7 @@ with open(config_file, "r") as f:
     logger.info(f"--->The knowledge base id is: {knowledge_base}")
     auth_username = config.get("username")
     auth_password = config.get("password")
+    opensearch_host = config.get("opensearch-host")
 
 
 def require_auth(func):
@@ -83,7 +84,7 @@ def init_tracer():
 bedrock_client = BedrockClient()
 
 # initialize behavior log repository
-behavior_log_repository = OpenSearchBehaviorLogRepository("he5c017zshda54s6s8sa.us-west-2.aoss.amazonaws.com")
+behavior_log_repository = OpenSearchBehaviorLogRepository(opensearch_host)
 
 tracer = init_tracer()
 
