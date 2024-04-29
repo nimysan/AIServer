@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+
+from flask import logging
 from opensearchpy import OpenSearch, AWSV4SignerAuth, RequestsHttpConnection
 
 from boto3_client import get_boto3_config
-
-
+logger = logging.getLogger("flask.app")
 @dataclass
 class BehaviorLog:
     user_id: str
@@ -43,13 +44,15 @@ class OpenSearchBehaviorLogRepository(BehaviorLogRepository):
         self.index_name = index_name
 
         # Check if the index exists
-        if not self.client.indices.exists(index=index_name):
-            # Create the index if it doesn't exist
-            try:
-            create_response = self.client.indices.create(index=index_name)
-            print(create_response)
-        else:
-            print(f"Index '{index_name}' already exists.")
+        try:
+            if not self.client.indices.exists(index=index_name):
+                # Create the index if it doesn't exist
+                create_response = self.client.indices.create(index=index_name)
+                logger.info(create_response)
+            else:
+                logger.info(f"Index '{index_name}' already exists.")
+        except Exception as e:
+            logger.error(f"Error connecting to OpenSearch: {e}")
 
     def store_log(self, log: BehaviorLog):
         doc = {
