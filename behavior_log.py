@@ -45,6 +45,7 @@ class OpenSearchBehaviorLogRepository(BehaviorLogRepository):
         # Check if the index exists
         if not self.client.indices.exists(index=index_name):
             # Create the index if it doesn't exist
+            try:
             create_response = self.client.indices.create(index=index_name)
             print(create_response)
         else:

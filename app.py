@@ -18,6 +18,7 @@ from datetime import datetime
 from functools import wraps
 
 from flask import Flask, request, jsonify, Config
+from flask_cors import CORS
 from jaeger_client import Config
 from flask_opentracing import FlaskTracing
 from opensearchpy import AWSV4SignerAuth
@@ -82,11 +83,13 @@ def init_tracer():
 bedrock_client = BedrockClient()
 
 # initialize behavior log repository
-behavior_log_repository = OpenSearchBehaviorLogRepository("mpo4otqr20inv25sgw3.us-west-2.aoss.amazonaws.com")
+behavior_log_repository = OpenSearchBehaviorLogRepository("he5c017zshda54s6s8sa.us-west-2.aoss.amazonaws.com")
 
 tracer = init_tracer()
 
 app = Flask(__name__)
+CORS(app)  # 启用 CORS
+
 # app.config['JSON_AS_ASCII'] = False
 app.json.ensure_ascii = False  # 解决中文乱码问题
 tracing = FlaskTracing(tracer, True, app)
@@ -130,11 +133,15 @@ def ask_knowledge_base():
 
 @app.route('/chat', methods=['POST'])
 @require_auth
-def suggest():
+def invoke_model():
     print(request.get_data())
     data = request.get_json()
-    input = data['input']
-    return jsonify({'result': bedrock_client.invoke_claude_3_with_text(input)})
+    prompt = data['input']
+    image_key = "images"
+    if image_key not in data:
+        return jsonify({'result': bedrock_client.invoke_claude_3_with_text(prompt)})
+    else:
+        return jsonify({'result': bedrock_client.invoke_claude_3_with_image_and_text(prompt, data[image_key])})
 
 
 @app.route('/log', methods=['POST'])
