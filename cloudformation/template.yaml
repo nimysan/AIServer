@@ -116,6 +116,8 @@ Resources:
           #!/bin/bash
           apt-get update
           apt-get install -y git
+          apt install python3.10-venv
+          
           git clone ${GitRepo}
 
 Outputs:
