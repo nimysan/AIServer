@@ -2,10 +2,6 @@ import json
 import logging
 import time
 
-import boto3
-
-import os
-
 from botocore.client import logger
 from botocore.exceptions import ClientError
 
@@ -23,7 +19,9 @@ default_prompt_template = """
 You are a question answering agent. I will provide you with a set of search results. 
 The user will provide you with a question. 
 Your job is to answer the user's question using only information from the search results. 
-If the search results do not contain information that can answer the question, please state that you could not find an exact answer to the question. Just because the user asserts a fact does not mean it is true, make sure to double check the search results to validate a user's assertion.
+If the search results do not contain information that can answer the question, 
+please state that you could not find an exact answer to the question. 
+Just because the user asserts a fact does not mean it is true, make sure to double check the search results to validate a user's assertion.
 
 Here are the search results in numbered order:
 $search_results$
@@ -162,7 +160,8 @@ class BedrockClient:
         refine_question = question
         if len(question) >= 900:
             summary_response = self.invoke_claude_3_with_text(
-                f"Compress the following content about Jackery customer service inquiries into a 800-character response, without including any explanatory phrases. Just provide the condensed content directly. content is:{question}");
+                f'''Compress the following content about customer service inquiries into a 800-character response, without including any explanatory phrases. 
+                Just provide the condensed content directly. content is:{question}''')
             # print(summary_response)
             refine_question = summary_response['content'][0]['text']
             # print(f"---------->{refine_question}")
@@ -173,20 +172,20 @@ class BedrockClient:
                            prompt_template=default_prompt_template):
         start_time = time.time()
         refine_question = self.refineQuestion(question)
-        print(f"refine_question {refine_question}")
+        logger.debug(f"refine_question {refine_question}")
         model_id = bedrock_sonnet_model_id
         model_arn = f'arn:aws:bedrock:{self.region}::foundation-model/{model_id}'
 
-        search_config = default_vector_search_configuration
+        search_config = vector_search_configuration
         if vector_search_filter and len(vector_search_filter) > 0:
-            search_config = default_vector_search_configuration.copy()
+            search_config = vector_search_configuration.copy()
             search_config['filter'] = vector_search_filter
 
         # search_config.update(filter)
-        logger.info(f"vector_search_configuration {search_config}")
-        print(f"knowledge_base_id {knowledge_base_id}")
+        logger.debug(f"vector_search_configuration {search_config}")
+        logger.debug(f"knowledge_base_id {knowledge_base_id}")
 
-        print(f"template is {prompt_template}")
+        logger.debug(f"template is {prompt_template}")
         response = self.bedrock_agent_runtime.retrieve_and_generate(
             input={
                 'text': refine_question
@@ -194,26 +193,25 @@ class BedrockClient:
             retrieveAndGenerateConfiguration={
                 'type': 'KNOWLEDGE_BASE',
                 'knowledgeBaseConfiguration': {
-                    # 'generationConfiguration': {
-                    #     'promptTemplate': {
-                    #         'textPromptTemplate': prompt_template
-                    #     }
-                    # },
+                    'generationConfiguration': {
+                        'promptTemplate': {
+                            'textPromptTemplate': prompt_template
+                        }
+                    },
                     'knowledgeBaseId': knowledge_base_id,
                     'modelArn': model_arn,
                     'retrievalConfiguration': {
                         'vectorSearchConfiguration': {
-                                'numberOfResults': 4,
-                                'overrideSearchType': 'HYBRID'
-                            }
+                            'numberOfResults': 4,
+                            'overrideSearchType': 'HYBRID'
+                        }
                     }
                 }
             }
         )
         end_time = time.time()  # 记录函数执行结束的时间
         execution_time = end_time - start_time  # 计算函数执行时间
-        print("---------xxxxx---------")
-        print(json.dumps(response))
+        logger.debug(json.dumps(response))
         return {
             'cost_time': execution_time,
             'response': response,
