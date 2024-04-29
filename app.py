@@ -17,7 +17,7 @@ import os
 from datetime import datetime
 from functools import wraps
 
-from flask import Flask, request, jsonify, Config
+from flask import Flask, request, jsonify, Config, render_template, session, url_for, redirect, send_from_directory
 from flask_cors import CORS
 from flask_opentracing import FlaskTracing
 from jaeger_client import Config
@@ -27,7 +27,7 @@ from behavior_log import OpenSearchBehaviorLogRepository, BehaviorLog
 from brclient.bedrock_client import BedrockClient
 
 logger = logging.getLogger("flask.app")
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # read kb config and set up the server username and password
 config_file = os.path.join(os.path.dirname(__file__), "config.json")
@@ -90,8 +90,25 @@ behavior_log_repository = OpenSearchBehaviorLogRepository(opensearch_host)
 
 tracer = init_tracer()
 
-app = Flask(__name__)
+# app = Flask(__name__)
+
+
+# 如果是 Next.js 应用程序
+app = Flask(__name__, static_folder='frontend/out')
 CORS(app)  # 启用 CORS
+
+print(app.static_folder)
+
+
+# Serve React App
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_static(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
+
 
 # app.config['JSON_AS_ASCII'] = False
 app.json.ensure_ascii = False  # 解决中文乱码问题
@@ -145,6 +162,17 @@ def invoke_model():
         return jsonify({'result': bedrock_client.invoke_claude_3_with_text(prompt)})
     else:
         return jsonify({'result': bedrock_client.invoke_claude_3_with_image_and_text(prompt, data[image_key])})
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # 处理表单数据
+        username = request.form['username']
+        password = request.form['password']
+        # 逻辑处理...
+        return 'Login successful'
+    return render_template('login.html')
 
 
 @app.route('/log', methods=['POST'])
