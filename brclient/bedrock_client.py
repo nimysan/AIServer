@@ -33,8 +33,8 @@ bedrock_sonnet_model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
 
 
 class BedrockClient:
-    def __init__(self):
-        self.region, boto_session = get_boto3_config()
+    def __init__(self, region):
+        self.region, boto_session = get_boto3_config(region)
         self.bedrock_agent_runtime = boto_session.client('bedrock-agent-runtime')
         self.bedrock_runtime = boto_session.client('bedrock-runtime')
 

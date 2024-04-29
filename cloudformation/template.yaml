@@ -17,6 +17,11 @@ Parameters:
     Type: String
     Default: 'ami-080e1f13689e07408'
 
+  OpenSearchCollectionARN:
+    Description: OpenSearch Collection for write access log
+    Type: String
+    Default: ''
+
   KeyPairName:
     Description: Key pair name
     Type: AWS::EC2::KeyPair::KeyName
@@ -89,6 +94,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckPath: /
+      HealthCheckPort: 5000
       Port: 5000
       Protocol: HTTP
       TargetType: instance
@@ -96,6 +102,42 @@ Resources:
       Targets:
         - Id:
             Ref: EC2Instance
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+      Policies:
+        - PolicyName: BedrockAgentAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'bedrock:*'
+                Resource: '*'
+        - PolicyName: OpenSearchCollectionIndexOperation
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'aoss:APIAccessAll'
+                Resource:
+                  - !Ref 'OpenSearchCollectionARN'
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2Role
 
   EC2Instance:
     Type: AWS::EC2::Instance
@@ -106,6 +148,7 @@ Resources:
         - !Ref 'EC2SecurityGroup'
       SubnetId: !Ref 'PublicSubnet1'
       KeyName: !Ref 'KeyPairName'
+      IamInstanceProfile: !Ref EC2InstanceProfile
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:

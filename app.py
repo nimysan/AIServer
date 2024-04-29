@@ -19,9 +19,8 @@ from functools import wraps
 
 from flask import Flask, request, jsonify, Config
 from flask_cors import CORS
-from jaeger_client import Config
 from flask_opentracing import FlaskTracing
-from opensearchpy import AWSV4SignerAuth
+from jaeger_client import Config
 from opentracing import tags
 
 from behavior_log import OpenSearchBehaviorLogRepository, BehaviorLog
@@ -38,6 +37,7 @@ with open(config_file, "r") as f:
     logger.info(f"--->The knowledge base id is: {knowledge_base}")
     auth_username = config.get("username")
     auth_password = config.get("password")
+    work_region = config.get("region", "us-west-2")
     opensearch_host = config.get("opensearch-host")
 
 
@@ -81,7 +81,9 @@ def init_tracer():
     return config.initialize_tracer()
 
 
-bedrock_client = BedrockClient()
+logger.info(f"Initialize app in region {work_region}")
+
+bedrock_client = BedrockClient(work_region)
 
 # initialize behavior log repository
 behavior_log_repository = OpenSearchBehaviorLogRepository(opensearch_host)
