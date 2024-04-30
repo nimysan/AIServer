@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}My Bootstrap Flask Page{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Welcome to my Bootstrap Flask page!</h1>
+    <p>This is a simple example of using Bootstrap with Flask.</p>
+
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Column 1</h2>
+            <p>This is the content of the first column.</p>
+        </div>
+        <div class="col-md-4">
+            <h2>Column 2</h2>
+            <p>This is the content of the second column.</p>
+        </div>
+        <div class="col-md-4">
+            <h2>Column 3</h2>
+            <p>This is the content of the third column.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

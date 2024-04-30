@@ -7,7 +7,7 @@ Prod部署:
 
 pip install gunicorn
 
-gunicorn --config gunicorn_config.py wsgi:app
+gunicorn --config.html gunicorn_config.py wsgi:app
 
 """
 import base64
@@ -17,7 +17,10 @@ import os
 from datetime import datetime
 from functools import wraps
 
-from flask import Flask, request, jsonify, Config, render_template, session, url_for, redirect, send_from_directory
+from flask import Flask, request, jsonify, Config, render_template, session, url_for, redirect, send_from_directory, \
+    current_app
+from flask.cli import with_appcontext
+from flask_bootstrap import Bootstrap5
 from flask_cors import CORS
 from flask_opentracing import FlaskTracing
 from jaeger_client import Config
@@ -25,11 +28,12 @@ from opentracing import tags
 
 from behavior_log import OpenSearchBehaviorLogRepository, BehaviorLog
 from brclient.bedrock_client import BedrockClient
+from db import close_db, init_db_command, init_db
 
 logger = logging.getLogger("flask.app")
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
-# read kb config and set up the server username and password
+# read kb config.html and set up the server username and password
 config_file = os.path.join(os.path.dirname(__file__), "config.json")
 with open(config_file, "r") as f:
     config = json.load(f)
@@ -94,23 +98,42 @@ tracer = init_tracer()
 
 
 # 如果是 Next.js 应用程序
-app = Flask(__name__, static_folder='frontend/out')
+app = Flask(__name__, static_folder="templates")
+app.config.from_mapping(
+    SECRET_KEY='dev',
+    DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+)
+
 CORS(app)  # 启用 CORS
 
-print(app.static_folder)
+bootstrap = Bootstrap5(app)
+
+import auth
+import config
+
+app.register_blueprint(auth.bp)
+app.register_blueprint(config.config_bp)
+
+app.teardown_appcontext(close_db)
+
+
+# app.cli.add_command(init_db_command)
+
+@app.cli.command("hello")
+@with_appcontext
+def hello_command():
+    """Print a hello message."""
+    init_db()
+    print("Hello, Flask!")
 
 
 # Serve React App
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve_static(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+@app.route('/')
+def index():
+    return render_template("index.html")
 
 
-# app.config['JSON_AS_ASCII'] = False
+# app.config.html['JSON_AS_ASCII'] = False
 app.json.ensure_ascii = False  # 解决中文乱码问题
 tracing = FlaskTracing(tracer, True, app)
 

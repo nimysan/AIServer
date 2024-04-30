@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h3>Config</h3>
+{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    <div class="mb-6 row">
+        <label for="opensearchHost" class="col-sm-4 col-form-label">OpenSearch Host</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control-plaintext" id="opensearchHost" required>
+        </div>
+    </div>
+    <div class="mb-6 row">
+        <label for="promptTemplate" class="col-sm-4 col-form-label">Prompt</label>
+        <div class="col-sm-10">
+            <textarea id="promptTemplate" class="form-control" required></textarea>
+        </div>
+    </div>
+    <div class="mb-6 row">
+        <input type="submit" value="Save" class="btn btn-info">
+    </div>
+
+
+</form>
+{% endblock %}
+
