@@ -1,8 +1,15 @@
-from flask import render_template, Blueprint
+class Config:
+    DEBUG = False
+    REGION = "us-west-2"
+    KNOWLEDGE_BASE = "your_secret_key"
+    OPENSEARCH_HOST = "sqlite:///database.db"
+    USER_TABLE_NAME = "ai_users"
 
-config_bp = Blueprint('config', __name__, url_prefix='/config')
+
+class ProductionConfig(Config):
+    DEBUG = False
 
 
-@config_bp.route('/index', methods=('GET', 'POST'))
-def save_config():
-    return render_template('config/config.html')
+class DevelopmentConfig(Config):
+    DEBUG = True
+    OPENSEARCH_HOST = "sqlite:///dev_database.db"

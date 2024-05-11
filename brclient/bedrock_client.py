@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 
 from boto3_client import get_boto3_config
 
-logger = logging.getLogger("bedrock")
+logger = logging.getLogger(__name__)
 
 # default search configuration for kb recall
 default_vector_search_configuration = {

@@ -5,15 +5,16 @@ Parameters:
   InstanceType:
     Description: WebServer EC2 instance type
     Type: String
-    Default: t2.micro
+    Default: t2.medium
     AllowedValues:
       - t2.micro
       - t2.small
       - t2.medium
-    ConstraintDescription: must be a valid EC2 instance type.
+      - m5.large
+    ConstraintDescription: must be a valid EC2 instance type. Please don't use T instance in Product.
 
   LatestAmiId:
-    Description: AMI for EC2 Instance （please use ubuntu 22.04)
+    Description: AMI for EC2 Instance （Ubuntu 22.04)
     Type: String
     Default: 'ami-080e1f13689e07408'
 

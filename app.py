@@ -17,10 +17,11 @@ import os
 from datetime import datetime
 from functools import wraps
 
+import config
+
 from flask import Flask, request, jsonify, Config, render_template, session, url_for, redirect, send_from_directory, \
     current_app
 from flask.cli import with_appcontext
-from flask_bootstrap import Bootstrap5
 from flask_cors import CORS
 from flask_opentracing import FlaskTracing
 from jaeger_client import Config
@@ -28,10 +29,25 @@ from opentracing import tags
 
 from behavior_log import OpenSearchBehaviorLogRepository, BehaviorLog
 from brclient.bedrock_client import BedrockClient
+
 from db import close_db, init_db_command, init_db
 
-logger = logging.getLogger("flask.app")
+logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+# 同时部署/api和ui dashboard
+app = Flask(__name__, static_folder='../flowbite-react-admin-dashboard/dist')
+CORS(app)
+app.json.ensure_ascii = False  # 解决中文乱码问题
+
+app.config.from_object(config.DevelopmentConfig)
+
+import auth
+from apis import api_config
+
+# cors = CORS(auth.bp, resources={r"/*": {"origins": ["http://localhost:3000", "http://localhost:5173"]}}, supports_credentials=True)
+app.register_blueprint(auth.bp)
+app.register_blueprint(api_config.bp)
 
 # read kb config.html and set up the server username and password
 config_file = os.path.join(os.path.dirname(__file__), "config.json")
@@ -94,71 +110,15 @@ behavior_log_repository = OpenSearchBehaviorLogRepository(opensearch_host)
 
 tracer = init_tracer()
 
-# app = Flask(__name__)
 
-
-# 如果是 Next.js 应用程序
-app = Flask(__name__, static_folder="templates")
-app.config.from_mapping(
-    SECRET_KEY='dev',
-    DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-)
-
-CORS(app)  # 启用 CORS
-
-bootstrap = Bootstrap5(app)
-
-import auth
-import config
-
-app.register_blueprint(auth.bp)
-app.register_blueprint(config.config_bp)
-
-app.teardown_appcontext(close_db)
-
-
-# app.cli.add_command(init_db_command)
-
-@app.cli.command("hello")
-@with_appcontext
-def hello_command():
-    """Print a hello message."""
-    init_db()
-    print("Hello, Flask!")
-
-
-# Serve React App
-@app.route('/')
-def index():
-    return render_template("index.html")
-
-
-# app.config.html['JSON_AS_ASCII'] = False
-app.json.ensure_ascii = False  # 解决中文乱码问题
-tracing = FlaskTracing(tracer, True, app)
-
-
-@app.before_request
-def start_trace():
-    with tracer.start_span('request') as span:
-        span.set_tag(tags.HTTP_METHOD, request.method)
-        span.set_tag(tags.HTTP_URL, request.path)
-
-
-@app.after_request
-def finish_trace(response):
-    tracer.active_span.finish()
-    return response
-
-
-@app.route('/suggest', methods=['POST'])
+@app.route('/api/suggest', methods=['POST', 'GET'])
 @require_auth
 def ask_knowledge_base():
-    print(request.get_data())
+    logger.info(request.get_data())
     data = request.get_json()
     question = data['input']
     knowledge_base_id = knowledge_base
-    print("The knowledge base is " + knowledge_base_id)
+    logger.info("The knowledge base is " + knowledge_base_id)
 
     search_filter = {}
     if "filter" in data:
@@ -174,6 +134,41 @@ def ask_knowledge_base():
             {'result': bedrock_client.ask_knowledge_base(question, knowledge_base_id, search_filter)})
 
 
+# Serve React App
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    if os.path.isfile(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
+
+
+app.config.from_mapping(
+    SECRET_KEY='dev',
+    DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+)
+
+app.teardown_appcontext(close_db)
+
+# app.config.html['JSON_AS_ASCII'] = False
+
+tracing = FlaskTracing(tracer, True, app)
+
+
+# @app.before_request
+# def start_trace():
+#     with tracer.start_span('request') as span:
+#         span.set_tag(tags.HTTP_METHOD, request.method)
+#         span.set_tag(tags.HTTP_URL, request.path)
+#
+#
+# @app.after_request
+# def finish_trace(response):
+#     tracer.active_span.finish()
+#     return response
+
+
 @app.route('/chat', methods=['POST'])
 @require_auth
 def invoke_model():
@@ -185,17 +180,6 @@ def invoke_model():
         return jsonify({'result': bedrock_client.invoke_claude_3_with_text(prompt)})
     else:
         return jsonify({'result': bedrock_client.invoke_claude_3_with_image_and_text(prompt, data[image_key])})
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        # 处理表单数据
-        username = request.form['username']
-        password = request.form['password']
-        # 逻辑处理...
-        return 'Login successful'
-    return render_template('login.html')
 
 
 @app.route('/log', methods=['POST'])
@@ -213,6 +197,9 @@ def log():
     logger.info(f"---------> {behavior_log}")
     return jsonify({'result': behavior_log_repository.store_log(behavior_log)})
 
+
+# CORS(app)  # 启用 CORS
+cors = CORS(app, resources={r"/user/*": {"origins": "*"}})
 
 if __name__ == '__main__':
     app.run(debug=True)

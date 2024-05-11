@@ -128,3 +128,11 @@ docker run -d --name jaeger \
 ```
 
 访问UI: http://localhost:16686/search    
+
+## deploy frontend pages
+
+https://blog.miguelgrinberg.com/post/how-to-deploy-a-react--flask-project
+
+```bash
+https://blog.miguelgrinberg.com/post/how-to-deploy-a-react--flask-project
+```
