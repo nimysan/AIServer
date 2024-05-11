@@ -5,7 +5,10 @@ from dataclasses import dataclass
 from opensearchpy import OpenSearch, AWSV4SignerAuth, RequestsHttpConnection
 
 from boto3_client import get_boto3_config
-logger = logging.getLogger("app.opensearch")
+
+logger = logging.getLogger(__name__)
+
+
 @dataclass
 class BehaviorLog:
     user_id: str
@@ -82,5 +85,6 @@ class OpenSearchBehaviorLogRepository(BehaviorLogRepository):
                     input_data=source['input_data']
                 ))
             return logs
-        except:
+        except Exception as e:
+            logger.error(f"error message is {e}")
             return []

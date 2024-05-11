@@ -10,7 +10,6 @@ from flask_cors import CORS
 import config
 from endpoints import register_api_endpoints
 from model import init_model_access
-from apis import api_config
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

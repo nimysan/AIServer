@@ -77,7 +77,7 @@ class UserRepository:
             else:
                 return None
         except ClientError as e:
-            print(e.response['Error']['Message'])
+            logger.info(e.response['Error']['Message'])
             return None
 
     # 修改密码
