@@ -1,23 +1,21 @@
-import functools
+"""
+CRUD一些动态配置， 这些配置会保存在数据库里面
+"""
 import logging
 
-from flask import current_app, app, jsonify, request
+from flask import Blueprint, request, current_app, jsonify
 
+from brclient.bedrock_client import BedrockClient
 from brclient.config import ConfigItemRepository
 
-from flask import (
-    Blueprint
-)
+bp = Blueprint("ai_config", __name__, url_prefix='/config')
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-
-bp = Blueprint('config', __name__, url_prefix='/config')
 
 config_repository = ConfigItemRepository("us-west-2")
 
 
-@bp.route('/add', methods=["POST"])
+@bp.route("", methods=["POST"])
 def addItem():
     """
     test:
@@ -45,7 +43,7 @@ def addItem():
     return jsonify({'message': 'Config created successfully'}), 200
 
 
-@bp.route('/list', methods=["GET"])
+@bp.route("", methods=["GET"])
 def list():
     """
     test:
