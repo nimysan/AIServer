@@ -7,7 +7,7 @@ from flask_cors import cross_origin
 from user.user import UserRepository
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, g, redirect, request, url_for
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
