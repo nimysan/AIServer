@@ -4,7 +4,7 @@ CRUD一些动态配置， 这些配置会保存在数据库里面
 import logging
 
 from flask import Blueprint, request, current_app, jsonify
-from brclient.config import ConfigItemRepository
+from model.config import ConfigItemRepository
 
 bp = Blueprint("ai_config", __name__, url_prefix='/config')
 
@@ -29,16 +29,27 @@ def addItem():
     if not data:
         return jsonify({'error': 'No JSON data provided'}), 400
 
-    # 获取username和password参数
+    item_name = data.get('name')
     item_key = data.get('key')
     item_value = data.get('value')
-    item_name = data.get('name')
 
     config_repository.create_item(item_key, item_name, item_value)
     # 在这里调用user_repository.create_user()方法创建用户
     # ...
 
     return jsonify({'message': 'Config created successfully'}), 200
+
+
+@bp.route("<item_key>", methods=["DELETE"])
+def delete(item_key):
+    """
+    test:
+
+    curl -X POST -H "Content-Type: application/json" -d '{"username": "testuser", "password": "testpassword"}' http://localhost:5000/user/register
+    :return:
+    """
+    config_repository.deleteByKey(item_key)
+    return "", 200
 
 
 @bp.route("", methods=["GET"])
