@@ -1,19 +1,17 @@
-import base64
+import logging
 import logging
 import os
-from functools import wraps
 
-from flask import Flask, request, send_from_directory
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 
 # self code
 import config
 from endpoints import register_api_endpoints
 from model import init_model_access
-from apis import api_config
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def init_app(app):
@@ -33,7 +31,7 @@ def server_react_as_webui(app):
 
 def create_app():
     # 同时部署/api和ui dashboard
-    app = Flask(__name__, static_folder='../flowbite-react-admin-dashboard/dist')
+    app = Flask(__name__, static_folder='../ai-frontend/dist')
     # some setup
     init_app(app)
 

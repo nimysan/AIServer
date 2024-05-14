@@ -27,11 +27,6 @@ Parameters:
     Description: Key pair name
     Type: AWS::EC2::KeyPair::KeyName
 
-  GitRepo:
-    Description: Git repository URL
-    Type: String
-    Default: 'https://github.com/nimysan/AIServer.git'
-
   VpcId:
     Description: Select an existing VPC
     Type: AWS::EC2::VPC::Id
@@ -159,10 +154,17 @@ Resources:
           !Sub |
           #!/bin/bash
           apt-get update
-          apt-get install -y git
-          apt install python3.10-venv
+          apt-get install -y git python3-pip python3.10-venv npm yarn
           
-          git clone ${GitRepo}
+          
+
+          git clone https://github.com/nimysan/ai-frontend.git
+          cd ai-frontend
+          chmod a+x install-ui.sh && ./install-ui.sh
+
+          git clone https://github.com/nimysan/AIServer.git
+          cd ../AIServer
+          chmod a+x start_server.sh && ./start_server.sh
 
 Outputs:
 

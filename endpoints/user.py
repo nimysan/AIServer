@@ -1,15 +1,14 @@
 import functools
 import logging
 
-from flask import current_app, app, jsonify
+from flask import jsonify
 from flask_cors import cross_origin
 
-from user.user import UserRepository
+from model.user import UserRepository
 
 from flask import (
     Blueprint, g, redirect, request, url_for
 )
-from werkzeug.security import check_password_hash, generate_password_hash
 
 logger = logging.getLogger(__name__)
 

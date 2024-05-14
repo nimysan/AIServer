@@ -72,6 +72,7 @@ class ConfigItemRepository:
         logger.info(f" {item_key}- {item_name} - {item_value}- ")
         try:
             current_time = int(time.time())  # 获取当前时间戳
+            logger.info(f"The value is {item_value}")
             self.table_object.put_item(
                 Item={
                     'itemKey': item_key,
@@ -94,3 +95,10 @@ class ConfigItemRepository:
         for item in response['Items']:
             list.append(convert_dynamodb_item(item))
         return list;
+
+    def deleteByKey(self, item_key):
+        logger.debug(f"delete the key {item_key}")
+        key = {'itemKey': item_key}
+        response = self.table_object.delete_item(
+            Key=key
+        )

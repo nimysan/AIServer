@@ -41,7 +41,7 @@ def retrieve_and_generate():
             {'result': bedrock_client.ask_knowledge_base(question, knowledge_base_id, search_filter)})
 
 
-@bp.route('/chat', methods=['POST'])
+@bp.route('/chat', methods=['POST','GET'])
 # @require_auth
 def chat_with_model():
     logger.debug(request.get_data())

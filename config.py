@@ -1,7 +1,7 @@
 class Config:
     DEBUG = False
     REGION = "us-west-2"
-    KNOWLEDGE_BASE = "your_secret_key"
+    KNOWLEDGE_BASE = "ZGFPCMLR5J"
     OPENSEARCH_HOST = "sqlite:///database.db"
     USER_TABLE_NAME = "ai_users"
 

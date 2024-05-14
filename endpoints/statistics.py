@@ -5,6 +5,7 @@ from flask import (
     Blueprint, request, jsonify, current_app
 )
 from model.behavior_log import BehaviorLog, OpenSearchBehaviorLogRepository
+from model import init_model_access
 
 bp = Blueprint("log", __name__, url_prefix='/log')
 
