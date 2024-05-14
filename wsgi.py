@@ -1,4 +1,5 @@
 from app import create_app
 
+web = create_app()
 if __name__ == "__main__":
-    create_app().run()
+    web.run()

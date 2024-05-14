@@ -18,4 +18,4 @@ source "$VENV_DIR/bin/activate"
 
 # 安装 requirements.txt 中的依赖项
 pip install -r requirements.txt
-gunicorn --config gunicorn_config.py wsgi:app
+gunicorn --config gunicorn_config.py wsgi:web
