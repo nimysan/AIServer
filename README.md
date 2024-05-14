@@ -1,5 +1,11 @@
 # Amazon Bedrock Knowledge base hosting server
 
+## how to deploy?
+
+[Download yaml template and upload as CloudFormation](./cloudformation/template.yaml)
+
+Get the url from Stack output and copy it to browser
+
 ## how to run?
 
 ```bash
@@ -12,8 +18,12 @@ export SECRET_KEY=xxx
 
 http://localhost:5000¬
 
-> 我们如何解决不同语言不同地区的知识库的差异？  [采用metadata和filter来区分](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-ds.html#kb-ds-metadata)
+>
+我们如何解决不同语言不同地区的知识库的差异？  [采用metadata和filter来区分](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-ds.html#kb-ds-metadata)
 
+## Frontend
+
+[Static Export方式部署前端](https://nextjs.org/docs/app/building-your-application/deploying/static-exports)
 
 ```bash
 
@@ -118,3 +128,11 @@ docker run -d --name jaeger \
 ```
 
 访问UI: http://localhost:16686/search    
+
+## deploy frontend pages
+
+https://blog.miguelgrinberg.com/post/how-to-deploy-a-react--flask-project
+
+```bash
+https://blog.miguelgrinberg.com/post/how-to-deploy-a-react--flask-project
+```

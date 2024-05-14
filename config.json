@@ -1,6 +1,8 @@
 {
-  "knowledge-base": "EJBZDFNZNO",
+  "knowledge-base": "9SLNJ60S7Y",
   "username": "admin",
-  "password": "password123"
+  "password": "password123",
+  "opensearch-host": "https://cmd42wz27yyj20g7zmwd.us-west-2.aoss.amazonaws.com",
+  "region": "us-west-2"
 }
 
