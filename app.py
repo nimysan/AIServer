@@ -1,9 +1,8 @@
-import base64
+import logging
 import logging
 import os
-from functools import wraps
 
-from flask import Flask, request, send_from_directory
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 
 # self code
