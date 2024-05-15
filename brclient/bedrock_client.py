@@ -211,7 +211,7 @@ class BedrockClient:
         )
         end_time = time.time()  # 记录函数执行结束的时间
         execution_time = end_time - start_time  # 计算函数执行时间
-        logger.debug(json.dumps(response))
+        # logger.debug(json.dumps(response))
         return {
             'cost_time': execution_time,
             'response': response,
