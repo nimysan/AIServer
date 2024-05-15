@@ -46,7 +46,10 @@ def find_rewrite_prompt(brand, intent):
     brand_data = [data for data in config_data if data.get('item_key').startswith(brand)]
     print(brand_data)
     # 然后在品牌数据中寻找精确匹配的brand_intent
-    brand_intent_key = f"{brand}_{intent}_rewrite_prompt"
+    if intent:
+        brand_intent_key = f"{brand}_{intent}_rewrite_prompt"
+    else:
+        brand_intent_key = f"{brand}_rewrite_prompt"
     print(brand_intent_key)
     for data in brand_data:
         if data.get('item_key') == brand_intent_key:
@@ -66,6 +69,7 @@ def find_rewrite_prompt(brand, intent):
         else:
             # 如果仍然没有找到,则使用默认提示
             prompt = get_config("rewrite_prompt")
+    print("f write protmp ----< {prompt}")
     return prompt
 
 
