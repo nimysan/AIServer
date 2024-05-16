@@ -30,7 +30,7 @@ def require_auth():
     # 从请求中获取身份验证凭据(例如 JWT 令牌或会话 ID)
     auth_header = request.headers.get('Authorization')
 
-    if not auth_header:
+    if not auth_header or len(auth_header)==0:
         # 如果没有提供身份验证凭据,返回 401 Unauthorized
         return jsonify({"error": "Missing authentication credentials"}), 401
 
