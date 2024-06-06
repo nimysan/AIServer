@@ -100,6 +100,11 @@ def retrieve_and_generate():
             {'result': bedrock_client.ask_knowledge_base(question, knowledge_base_id, search_filter)})
 
 
+def reload_config():
+    global config_data
+    config_data = config_repository.list_all()
+    # print(config_data)
+
 @bp.route('/rag_with_rewrite', methods=['POST', 'GET'])
 # @require_auth
 def retrieve_and_generate_and_rewrite():
@@ -129,6 +134,9 @@ def retrieve_and_generate_and_rewrite():
         suggest = bedrock_client.ask_knowledge_base(question, knowledge_base_id, search_filter)
 
     #是否做改写
+    # refresh config data
+    reload_config()
+
     rewrite_prompt = find_rewrite_prompt(brand, intent);
     content = suggest['response']['output']['text'];
     if rewrite_prompt:
