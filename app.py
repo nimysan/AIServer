@@ -1,5 +1,4 @@
 import logging
-import logging
 import os
 
 from flask import Flask, send_from_directory
@@ -8,10 +7,25 @@ from flask_cors import CORS
 # self code
 import config
 from endpoints import register_api_endpoints
-from model import init_model_access
+from model import init_model_access, get_user_repository
+
+from logging.handlers import RotatingFileHandler
+
+# 创建一个日志文件处理程序
+file_handler = RotatingFileHandler('flask_app.log', maxBytes=10000, backupCount=5)
+file_handler.setLevel(logging.INFO)
+
+# 创建一个控制台日志处理程序
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+# 设置日志格式
+formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def init_app(app):
@@ -42,32 +56,12 @@ def create_app():
         init_model_access()
         # register api endpoints
         register_api_endpoints(app)  # 参考 https://blog.csdn.net/qq_30117567/article/details/122645987
+        # create default admin with random password if does not exist
+        get_user_repository().initialize_default_admin_user();
 
     server_react_as_webui(app)
 
     return app
-
-
-# def require_auth(func):
-#     @wraps(func)
-#     def decorated(*args, **kwargs):
-#         auth_header = request.headers.get('Authorization')
-#         logger.debug(f"auth_header {auth_header}")
-#         if not auth_header:
-#             return {'message': 'Authentication required'}, 401
-#
-#         auth_token = auth_header.split(' ')[1]
-#         logger.debug(f"auth_token {auth_token}")
-#         decoded_token = base64.b64decode(auth_token).decode('utf-8')
-#         username, password = decoded_token.split(':')
-#         logger.debug(f"Username {username} and password {password}")
-#         # Replace this with your own authentication logic
-#         if username != auth_username or password != auth_password:
-#             return {'message': 'Invalid credentials'}, 401
-#
-#         return func(*args, **kwargs)
-#
-#     return decorated
 
 
 if __name__ == '__main__':

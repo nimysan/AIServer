@@ -4,17 +4,16 @@ import logging
 from flask import jsonify
 from flask_cors import cross_origin
 
-from model.user import UserRepository
-
 from flask import (
     Blueprint, g, redirect, request, url_for
 )
 
+from model import get_user_repository
+from model.user import print_base64_credentials
+
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('user', __name__, url_prefix='/user')
-
-user_repository = UserRepository("us-west-2")
 
 
 @bp.route('/register', methods=["POST"])
@@ -41,6 +40,7 @@ def register():
     if not username or not password:
         return jsonify({'error': 'Missing required parameters'}), 400
 
+    user_repository = get_user_repository()
     logger.info(f"Received username: {username}, password: {password}")
     user_repository.create_user(None, username, password, "")
     # 在这里调用user_repository.create_user()方法创建用户
@@ -77,15 +77,19 @@ def login():
         return jsonify({'error': 'Missing required parameters'}), 400
 
     logger.info(f"Received username: {username}, password: {password}")
+    user_repository= get_user_repository()
     user = user_repository.load_user_by_username(username)
-    print(user)
-    # 在这里调用user_repository.create_user()方法创建用户
-    # ...
 
-    return jsonify({'message': 'User log', 'user': {
-        "user_id": "uxx",
-        "user_name": "hello"
-    }}), 200
+    logger.info(f"Received username: {user}")
+    base64_token = print_base64_credentials(user["userName"],user["password"])
+    if user and user['password'] == password:
+        return jsonify({'message': 'User login successfully', 'user': {
+            "user_id": user["userId"],
+            "user_name": user["userName"],
+            "user_token": base64_token
+        }}), 200
+
+    return "login fail", 401
     # return "", 200
 
 
