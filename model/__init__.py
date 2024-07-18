@@ -46,7 +46,7 @@ def init_model_repositories(app):
     global user_repository;
     opener_host = current_app.config["OPENSEARCH_HOST"]
     logger.info(f"behavior logs host is: {opener_host}")
-    behavior_log_repository = OpenSearchBehaviorLogRepository(opener_host)
+    app.behavior_log_repository = OpenSearchBehaviorLogRepository(opener_host)
 
     app.work_region = current_app.config["REGION"]
     # 用户管理
@@ -63,5 +63,5 @@ def init_model_repositories(app):
     app.aws_s3_client = boto_session.client('s3')
     app.aws_transcribe_client = boto_session.client('transcribe')
 
-    return [behavior_log_repository, user_repository]
+    return [user_repository]
 

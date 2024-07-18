@@ -1,5 +1,5 @@
 curl -X POST \
-  http://localhost:5000/log \
+  http://localhost:5000/api/log \
   -H "Content-Type: application/json" \
   -H "Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=" \
   -d @- <<EOF
@@ -11,8 +11,7 @@ curl -X POST \
     "ticket_brand":"t_brand",
     "ticket_channel":"support",
     "question":"xxxxx",
-    "kb_reference":{},
-    "prompt_template":"elloooo"
+    "kb_reference":{}
   }
 }
 EOF
