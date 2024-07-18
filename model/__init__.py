@@ -13,7 +13,6 @@ logger.info("--------------> Model and repository initialize please see model/__
 
 
 user_repository = None
-asr_job_repository = None
 
 
 def get_user_repository(refresh=False):
@@ -26,18 +25,6 @@ def get_user_repository(refresh=False):
         user_repository = UserRepository(work_region)
 
     return user_repository;
-
-
-def get_asr_job_repository(refresh=False):
-    global asr_job_repository;
-    work_region = current_app.config["REGION"]
-    if refresh:
-        asr_job_repository = None;
-
-    if asr_job_repository is None:
-        asr_job_repository = ASRJobRepository(work_region)
-
-    return asr_job_repository;
 
 
 def init_model_repository_and_aws_boto3(app):

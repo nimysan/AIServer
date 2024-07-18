@@ -1,14 +1,13 @@
 import functools
 import logging
 
-from flask import jsonify
+from flask import jsonify, current_app
 from flask_cors import cross_origin
 
 from flask import (
     Blueprint, g, redirect, request, url_for
 )
 
-from model import get_user_repository
 from model.user import print_base64_credentials
 
 logger = logging.getLogger(__name__)
@@ -40,7 +39,7 @@ def register():
     if not username or not password:
         return jsonify({'error': 'Missing required parameters'}), 400
 
-    user_repository = get_user_repository()
+    user_repository = current_app.user_repository;
     logger.info(f"Received username: {username}, password: {password}")
     user_repository.create_user(None, username, password, "")
     # 在这里调用user_repository.create_user()方法创建用户
@@ -77,7 +76,7 @@ def login():
         return jsonify({'error': 'Missing required parameters'}), 400
 
     logger.info(f"Received username: {username}, password: {password}")
-    user_repository= get_user_repository()
+    user_repository = current_app.user_repository
     user = user_repository.load_user_by_username(username)
 
     logger.info(f"Received username: {user}")
