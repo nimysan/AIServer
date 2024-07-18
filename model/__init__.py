@@ -5,9 +5,9 @@ from flask import current_app
 from model.behavior_log import OpenSearchBehaviorLogRepository
 from model.user import UserRepository
 from model.asr_job import ASRJobRepository
-
-print("--------------> model package initialize -------------->")
 logger = logging.getLogger(__name__)
+logger.info("--------------> Model and repository initialize please see model/__init__.py -------------->")
+
 
 user_repository = None
 asr_job_repository = None
@@ -37,18 +37,26 @@ def get_asr_job_repository(refresh=False):
     return asr_job_repository;
 
 
-def init_model_access():
-    # print(current_app)
+def init_model_repositories(app):
+    """
+    初始化 模型访问层
+    :return:
+    """
     global user_repository;
     opener_host = current_app.config["OPENSEARCH_HOST"]
     logger.info(f"behavior logs host is: {opener_host}")
     behavior_log_repository = OpenSearchBehaviorLogRepository(opener_host)
 
-    work_region = current_app.config["REGION"]
-    # bedrock_client = load_bedrock_client(region=work_region)
-    user_repository = UserRepository(work_region)
+    app.work_region = current_app.config["REGION"]
+    # 用户管理
+    app.user_repository = UserRepository(app.work_region)
+    # create default admin with random password if does not exist
+    app.user_repository.initialize_default_admin_user()
+
+    # ASR任务记录管理
+    app.asr_job_repository = ASRJobRepository(app.work_region)
+
 
 
     return [behavior_log_repository, user_repository]
 
-# __all__ = init_model_access()

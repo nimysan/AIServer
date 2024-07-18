@@ -5,6 +5,7 @@ import uuid
 
 import requests
 import tempfile
+import json
 
 from flask import Blueprint, request, current_app, jsonify
 from brclient.bedrock_client import BedrockClient
@@ -41,17 +42,22 @@ def get_config(prompt_key):
     return None
 
 
-# 创建 S3 和 Transcribe 客户端
-region, boto_session = get_boto3_config("us-west-2")
-s3_client = boto_session.client('s3')
-transcribe_client = boto_session.client('transcribe')
+@bp.route('/test', methods=['POST', 'GET'])
+def test():
+    print(current_app)
+    return "200";
 
 
 @bp.route('/job', methods=['POST', 'GET'])
 def submit_asr():
+    # 创建 S3 和 Transcribe 客户端
+    region, boto_session = get_boto3_config(current_app.work_region)
+    s3_client = boto_session.client('s3')
+    transcribe_client = boto_session.client('transcribe')
+
     data = request.get_json()
     mp4_url = data['mp4_url'] + ""
-    print(mp4_url)
+
     language = data['language']
     if mp4_url.startswith("s3"):
         s3_uri = mp4_url
@@ -87,19 +93,16 @@ def submit_asr():
     print(response['TranscriptionJob'])
     job_id = response['TranscriptionJob']['TranscriptionJobName']
     job_status = response['TranscriptionJob']['TranscriptionJobStatus']
-    asr_job_repository = get_asr_job_repository()
-    asr_job_repository.create_item(job_id, s3_uri, job_status)
+    current_app.asr_job_repository.create_item(job_id, s3_uri, job_status)
 
     return mp4_url
 
 
-import json
-
-"""
-具体代码参考： https://repost.aws/questions/QUjAzM70sgRiGkzI6blytmdg/transcribe-is-missing-conversation-not-identify-speakers
-非常重要
-"""
 def convert_json_to_format(transcript_json):
+    """
+    具体代码参考： https://repost.aws/questions/QUjAzM70sgRiGkzI6blytmdg/transcribe-is-missing-conversation-not-identify-speakers
+    非常重要
+    """
     items = transcript_json['results']['items']
     output_text = ""
     current_speaker = None
@@ -124,6 +127,8 @@ def convert_json_to_format(transcript_json):
 
 @bp.route('/asr_result', methods=['POST', 'GET'])
 def get_asr_result():
+    region, boto_session = get_boto3_config(current_app.work_region)
+    transcribe_client = boto_session.client('transcribe')
     data = request.get_json()
     job_name = data['job_name']
     job_result = None

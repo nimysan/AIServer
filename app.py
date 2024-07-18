@@ -7,7 +7,7 @@ from flask_cors import CORS
 # self code
 import config
 from endpoints import register_api_endpoints
-from model import init_model_access, get_user_repository
+from model import init_model_repositories, get_user_repository
 
 from logging.handlers import RotatingFileHandler
 
@@ -29,6 +29,11 @@ logging.basicConfig(level=logging.INFO)
 
 
 def init_app(app):
+    """
+    Some normal app settings
+    :param app:
+    :return:
+    """
     CORS(app)
     app.json.ensure_ascii = False  # 解决中文乱码问题
 
@@ -53,11 +58,10 @@ def create_app():
     app.config.from_object(config.DevelopmentConfig)
 
     with app.app_context():
-        init_model_access()
+        # init model and database layer
+        init_model_repositories(app)
         # register api endpoints
         register_api_endpoints(app)  # 参考 https://blog.csdn.net/qq_30117567/article/details/122645987
-        # create default admin with random password if does not exist
-        get_user_repository().initialize_default_admin_user();
 
     server_react_as_webui(app)
 

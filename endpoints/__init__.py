@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask, jsonify, request
 
 from endpoints.api import api_bp
@@ -8,7 +10,9 @@ from endpoints.user import bp as user_bp
 from endpoints.asr import bp as asr_bp
 from security import is_authenticated
 
-print("hello --- api ---")
+logger = logging.getLogger(__name__)
+logger.info("--------------> rest api register, please see endpoints/__init__.py -------------->")
+
 
 
 # 定义认证装饰器
