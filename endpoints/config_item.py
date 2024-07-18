@@ -9,10 +9,6 @@ from model.config import ConfigItemRepository
 bp = Blueprint("ai_config", __name__, url_prefix='/config')
 
 logger = logging.getLogger(__name__)
-
-config_repository = ConfigItemRepository("us-west-2")
-
-
 @bp.route("", methods=["POST"])
 def addItem():
     """
@@ -33,7 +29,7 @@ def addItem():
     item_key = data.get('key')
     item_value = data.get('value')
 
-    config_repository.create_item(item_key, item_name, item_value)
+    current_app.config_repository.create_item(item_key, item_name, item_value)
     # 在这里调用user_repository.create_user()方法创建用户
     # ...
 
@@ -48,7 +44,7 @@ def delete(item_key):
     curl -X POST -H "Content-Type: application/json" -d '{"username": "testuser", "password": "testpassword"}' http://localhost:5000/user/register
     :return:
     """
-    config_repository.deleteByKey(item_key)
+    current_app.config_repository.deleteByKey(item_key)
     return "", 200
 
 
@@ -60,5 +56,5 @@ def list_config():
     curl -X POST -H "Content-Type: application/json" -d '{"username": "testuser", "password": "testpassword"}' http://localhost:5000/user/register
     :return:
     """
-    data = config_repository.list_all()
+    data = current_app.config_repository.list_all()
     return data, 200
