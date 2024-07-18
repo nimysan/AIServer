@@ -8,3 +8,14 @@ curl -X POST \
 "language": "ja-JP"
 }
 EOF
+
+
+curl -X POST \
+  http://localhost:5000/api/asr/asr_result \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic YWRtaW46KGBnSHBOfjI=" \
+  -d @- <<EOF
+{
+"job_name": "test-a"
+}
+EOF
