@@ -2,6 +2,7 @@ import logging
 
 from flask import current_app
 
+from boto3_client import get_boto3_config
 from model.behavior_log import OpenSearchBehaviorLogRepository
 from model.user import UserRepository
 from model.asr_job import ASRJobRepository
@@ -56,7 +57,11 @@ def init_model_repositories(app):
     # ASR任务记录管理
     app.asr_job_repository = ASRJobRepository(app.work_region)
 
-
+    # AWS boto3 client initialized
+    logger.info(f"------ AWS boto3 client initialized ------")
+    region, boto_session = get_boto3_config(app.work_region )
+    app.aws_s3_client = boto_session.client('s3')
+    app.aws_transcribe_client = boto_session.client('transcribe')
 
     return [behavior_log_repository, user_repository]
 

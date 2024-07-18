@@ -1,3 +1,4 @@
+import datetime
 import logging
 import time
 
@@ -71,13 +72,14 @@ class ASRJobRepository:
     def create_item(self, item_key, mp4_url, job_status):
         logger.info(f" {item_key}- {mp4_url} - {job_status}- ")
         try:
-            current_time = int(time.time())  # 获取当前时间戳
+            current_time = datetime.datetime.now().isoformat() # 将当前时间转换为 ISO 格式字符串
             logger.info(f"The value is {job_status}")
             self.table_object.put_item(
                 Item={
                     'jobKey': item_key,
                     'videoFrom': mp4_url,
                     'jobStatus': job_status,
+                    'jobScripts': "",
                     'created_at': current_time,  # 添加创建时间戳
                     'updated_at': current_time  # 添加创建时间戳
                 }
@@ -86,6 +88,23 @@ class ASRJobRepository:
         except ClientError as e:
             logger.info(e.response['Error']['Message'])
 
+    def update_item(self, job_name, job_status, job_scripts):
+        try:
+            current_time = datetime.datetime.now().isoformat() # 将当前时间转换为 ISO 格式字符串
+            print("---- "+current_time)
+            response = self.table_object.update_item(
+                Key={'jobKey': job_name},
+                UpdateExpression="SET jobStatus = :js, jobScripts = :jsc, updated_at= :ua ",
+                ExpressionAttributeValues={
+                    ':js': job_status,
+                    ':jsc': job_scripts,
+                    ':ua': current_time
+                },
+                ReturnValues="UPDATED_NEW"
+            )
+            logger.info(f"Item updated: {job_name}")
+        except ClientError as e:
+            logger.info(e.response['Error']['Message'])
     def list_all(self):
         # 扫描表并获取所有项目
         response = self.dynamodb.scan(

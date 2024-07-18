@@ -1,45 +1,14 @@
-import datetime
 import logging
 import os
+import tempfile
 import uuid
 
 import requests
-import tempfile
-import json
-
-from flask import Blueprint, request, current_app, jsonify
-from brclient.bedrock_client import BedrockClient
-from model import get_asr_job_repository
+from flask import Blueprint, request, current_app
 
 bp = Blueprint("asr", __name__, url_prefix='/asr')
 
 logger = logging.getLogger(__name__)
-
-from boto3_client import get_boto3_config
-
-from model.config import ConfigItemRepository
-
-config_repository = ConfigItemRepository("us-west-2")
-config_data = config_repository.list_all()
-
-
-def remove_rewrite_prompt(string):
-    if "_rewrite_prompt" in string:
-        return string.replace("_rewrite_prompt", "")
-    else:
-        return string
-
-
-def load_bedrock_client(region):
-    bedrock_client = BedrockClient(region)
-    return bedrock_client
-
-
-def get_config(prompt_key):
-    for data in config_data:
-        if data.get('item_key') == prompt_key:
-            return data.get('item_value')
-    return None
 
 
 @bp.route('/test', methods=['POST', 'GET'])
@@ -50,10 +19,8 @@ def test():
 
 @bp.route('/job', methods=['POST', 'GET'])
 def submit_asr():
-    # 创建 S3 和 Transcribe 客户端
-    region, boto_session = get_boto3_config(current_app.work_region)
-    s3_client = boto_session.client('s3')
-    transcribe_client = boto_session.client('transcribe')
+    s3_client = current_app.aws_s3_client;
+    transcribe_client = current_app.aws_transcribe_client;
 
     data = request.get_json()
     mp4_url = data['mp4_url'] + ""
@@ -125,10 +92,28 @@ def convert_json_to_format(transcript_json):
     return output_text
 
 
+@bp.route('/update_asr_job', methods=['POST', 'GET'])
+def update_asr_result():
+    transcribe_client = current_app.aws_transcribe_client;
+    data = request.get_json()
+    job_name = data['job_name']
+    job_result = None
+    job_status = transcribe_client.get_transcription_job(TranscriptionJobName=job_name)
+
+    if job_status['TranscriptionJob']['TranscriptionJobStatus'] == 'COMPLETED':
+        transcript_file_uri = job_status['TranscriptionJob']['Transcript']['TranscriptFileUri']
+        transcript_json = requests.get(transcript_file_uri).json()
+        job_result = convert_json_to_format(transcript_json)
+        current_app.asr_job_repository.update_item(job_name, job_status, job_result)
+    else:
+        current_app.asr_job_repository.update_item(job_name, job_status, job_result)
+
+    return "";
+
+
 @bp.route('/asr_result', methods=['POST', 'GET'])
 def get_asr_result():
-    region, boto_session = get_boto3_config(current_app.work_region)
-    transcribe_client = boto_session.client('transcribe')
+    transcribe_client = current_app.aws_transcribe_client;
     data = request.get_json()
     job_name = data['job_name']
     job_result = None
