@@ -7,7 +7,7 @@ from flask_cors import CORS
 # self code
 import config
 from endpoints import register_api_endpoints
-from model import init_model_repositories, get_user_repository
+from model import init_model_repository_and_aws_boto3, get_user_repository
 
 from logging.handlers import RotatingFileHandler
 
@@ -59,7 +59,7 @@ def create_app():
 
     with app.app_context():
         # init model and database layer
-        init_model_repositories(app)
+        init_model_repository_and_aws_boto3(app)
         # register api endpoints
         register_api_endpoints(app)  # 参考 https://blog.csdn.net/qq_30117567/article/details/122645987
 

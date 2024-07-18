@@ -3,7 +3,9 @@ import logging
 from flask import current_app
 
 from boto3_client import get_boto3_config
+from brclient.bedrock_client import BedrockClient
 from model.behavior_log import OpenSearchBehaviorLogRepository
+from model.config import ConfigItemRepository
 from model.user import UserRepository
 from model.asr_job import ASRJobRepository
 logger = logging.getLogger(__name__)
@@ -38,7 +40,7 @@ def get_asr_job_repository(refresh=False):
     return asr_job_repository;
 
 
-def init_model_repositories(app):
+def init_model_repository_and_aws_boto3(app):
     """
     初始化 模型访问层
     :return:
@@ -53,15 +55,20 @@ def init_model_repositories(app):
     app.user_repository = UserRepository(app.work_region)
     # create default admin with random password if does not exist
     app.user_repository.initialize_default_admin_user()
+    # app_config_repository
+    app.config_repository = ConfigItemRepository(app.work_region)
+
+
 
     # ASR任务记录管理
     app.asr_job_repository = ASRJobRepository(app.work_region)
 
     # AWS boto3 client initialized
     logger.info(f"------ AWS boto3 client initialized ------")
-    region, boto_session = get_boto3_config(app.work_region )
+    region, boto_session = get_boto3_config(app.work_region)
     app.aws_s3_client = boto_session.client('s3')
     app.aws_transcribe_client = boto_session.client('transcribe')
+    app.aws_bedrock_client = BedrockClient(app.work_region )
 
     return [user_repository]
 
