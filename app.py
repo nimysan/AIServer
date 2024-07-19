@@ -64,10 +64,12 @@ def create_app():
         register_api_endpoints(app)  # 参考 https://blog.csdn.net/qq_30117567/article/details/122645987
 
     server_react_as_webui(app)
-
     return app
 
 
 if __name__ == '__main__':
     app = create_app();
+    print('Registered Routes:')
+    for rule in app.url_map.iter_rules():
+        print(rule)
     app.run(debug=True)
