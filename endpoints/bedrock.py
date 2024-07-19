@@ -3,16 +3,12 @@ from string import Template
 
 from flask import Blueprint, request, current_app, jsonify
 
-from brclient.bedrock_client import BedrockClient
-
 bp = Blueprint("bedrock", __name__, url_prefix='/bedrock')
 
 logger = logging.getLogger(__name__)
 
-from model.config import ConfigItemRepository
-
-config_repository = ConfigItemRepository("us-west-2")
-config_data = config_repository.list_all()
+# config_repository = current_app.config_repository
+# config_data = []
 
 
 def remove_rewrite_prompt(string):
@@ -23,7 +19,7 @@ def remove_rewrite_prompt(string):
 
 
 def load_bedrock_client(region):
-    bedrock_client = BedrockClient(region)
+    bedrock_client = current_app.aws_bedrock_client
     return bedrock_client
 
 
@@ -102,7 +98,7 @@ def retrieve_and_generate():
 
 def reload_config():
     global config_data
-    config_data = config_repository.list_all()
+    config_data = current_app.config_repository.list_all()
     # print(config_data)
 
 @bp.route('/rag_with_rewrite', methods=['POST', 'GET'])

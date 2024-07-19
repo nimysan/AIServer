@@ -1,12 +1,51 @@
 # Amazon Bedrock Knowledge base hosting server
 
-## how to deploy?
+## 功能说明
 
-[Download yaml template and upload as CloudFormation](./cloudformation/template.yaml)
+### 提供API， 对接Amazon Bedrock 和 Knowledge base for Amazon Bedrock
+```bash
+/api/log
+/api/bedrock/rag
+/api/bedrock/rag_with_rewrite
+/api/bedrock/chat
+/api/config
+/api/config/<item_key>
+/api/config
+/api/asr/test
+/api/asr/job
+/api/asr/update_asr_job
+/api/asr/asr_result
+
+```
+
+### 提供配置修改能力
+
+![img.png](img.png)
+
+### 提供测试页面
+![img_1.png](img_1.png)
+
+
+## 部署和启动 
+
+> config.json 程序配置文件， 里面关联的是程序启动时候需要的region信息等， 服务启动后不可更改
+
+### app config
+
+> 此部分配置存在于Dynamic表中，可以修改
+
+### how to deploy?
+
+[Download yaml template and upload as CloudFormation](https://console.aws.amazon.com/cloudformation/home?region=us-east-1)
 
 Get the url from Stack output and copy it to browser
 
-## how to run?
+### 部署成功后
+
+> 服务启动在5000端口
+
+1. 拿到alb的访问路径， 直接访问
+2. http://{alb.domain}/api/bedrock/chat  #调用Amazon Bedrock托管的Sonnet模型
 
 ```bash
 export ACCESS_KEY=xxx
@@ -14,16 +53,7 @@ export SECRET_KEY=xxx
 ./start_server.sh
 ```
 
-## Access
-
-http://localhost:5000¬
-
->
-我们如何解决不同语言不同地区的知识库的差异？  [采用metadata和filter来区分](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-ds.html#kb-ds-metadata)
-
-## Frontend
-
-[Static Export方式部署前端](https://nextjs.org/docs/app/building-your-application/deploying/static-exports)
+### 几个本地测试的例子
 
 ```bash
 
@@ -109,30 +139,39 @@ curl -X POST -H "Content-Type: application/json" -d '{"input": "翻译以下内�
 
 ```
 
-## Trace
+### ASR Job Test
 
 ```bash
-# 启动jaeger
-docker run -d --name jaeger \
-    -e COLLECTOR_ZIPKIN_HTTP_PORT=9411 \
-    -p 5775:5775/udp \
-    -p 6831:6831/udp \
-    -p 6832:6832/udp \
-    -p 5778:5778 \
-    -p 16686:16686 \
-    -p 14268:14268 \
-    -p 9411:9411 \
-    jaegertracing/all-in-one:latest
-    
+curl -X POST \
+  http://localhost:5000/api/asr/job \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic YWRtaW46KGBnSHBOfjI=" \
+  -d @- <<EOF
+{
+"mp4_url": "s3://aigc.red.plaza/huabao/Ticket #593149recording.mp3",
+"language": "ja-JP"
+}
+EOF
 
-```
 
-访问UI: http://localhost:16686/search    
+curl -X POST \
+  http://localhost:5000/api/asr/update_asr_job \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic YWRtaW46KGBnSHBOfjI=" \
+  -d @- <<EOF
+{
+"job_name": "asr_ca4961b3-4a24-4bcb-90c5-c73d981e2000"
+}
+EOF
 
-## deploy frontend pages
 
-https://blog.miguelgrinberg.com/post/how-to-deploy-a-react--flask-project
-
-```bash
-https://blog.miguelgrinberg.com/post/how-to-deploy-a-react--flask-project
+curl -X POST \
+  http://localhost:5000/api/asr/update_asr_job \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Basic YWRtaW46KGBnSHBOfjI=" \
+  -d @- <<EOF
+{
+"job_name": "asr_7966a124-4612-4fb9-8544-a59718c36f93"
+}
+EOF
 ```
