@@ -8,6 +8,8 @@ from endpoints.bedrock import bp as bedrock_bp
 from endpoints.config_item import bp as config_bp
 from endpoints.user import bp as user_bp
 from endpoints.asr import bp as asr_bp
+from endpoints.bestqi import bp as bestqi_bp
+
 from security import is_authenticated
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,9 @@ def register_api_endpoints(app: Flask):
     api_bp.register_blueprint(bedrock_bp)
     api_bp.register_blueprint(config_bp)
     api_bp.register_blueprint(asr_bp)
+
+    # sample for bestqi
+    api_bp.register_blueprint(bestqi_bp)
 
     # Register some normal endpoints
     app.register_blueprint(user_bp)

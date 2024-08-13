@@ -3,13 +3,37 @@ from string import Template
 
 from flask import Blueprint, request, current_app, jsonify
 
-bp = Blueprint("bedrock", __name__, url_prefix='/bedrock')
+bp = Blueprint("bestqi", __name__, url_prefix='/bestqi')
 
 logger = logging.getLogger(__name__)
 
-# config_repository = current_app.config_repository
-# config_data = []
+from string import Template
+name = "Alice"
+age = 25
+intent_prompt = Template('''
+You are a customer service representative. 
+Please perform intent recognition based on the user's submitted content, which includes a subject and content. 
+Rely primarily on the content to determine the intent. Always output only the single most relevant intent. 
+Select the matching intent from the following intent_list in JSON format
+<intent_list>
+$intent_list
+</intent_list>
 
+The content of the customer's inquiry is
+<customer_inquiry>
+$customer_inquiry
+</customer_inquiry>
+
+Please output the intent according to the provided list of intents according the category and category description. your output should provide a complete JSON object. 
+The output format should be JSON, and please ensure that the outputted JSON is correctly formatted, including any necessary JSON escape settings, 
+to ensure that the outputted JSON can be parsed correctly.Avoid quotation mark within a quotation mark, 
+if encountering a quotation mark within a quotation mark, it needs to be single quotation mark instead. reason field please use chinese
+The format is as follows:
+        {
+            "reason": "xxx",
+            "intent": intent object
+        }
+''')
 
 def remove_rewrite_prompt(string):
     if "_rewrite_prompt" in string:
@@ -162,5 +186,24 @@ def chat_with_model():
         return jsonify({'result': bedrock_client.invoke_claude_3_with_text(prompt)})
     else:
         return jsonify({'result': bedrock_client.invoke_claude_3_with_image_and_text(prompt, data[image_key])})
+
+
+@bp.route('/intent', methods=['POST', 'GET'])
+# @require_auth
+def bestqi_intent():
+    """
+    意图识别
+    :return:
+    """
+    logger.debug(request.get_data())
+    data = request.get_json()
+    intent_list = data['intent_list']
+    # intent_description = data['intent_description']
+    customer_inquiry = data['customer_inquiry']
+    prompt = intent_prompt.substitute(intent_list=intent_list, customer_inquiry=customer_inquiry)
+
+    work_region = current_app.config["REGION"]
+    bedrock_client = load_bedrock_client(region=work_region)
+    return bedrock_client.invoke_claude_3_with_text(prompt)["content"][0]["text"]
 
 
