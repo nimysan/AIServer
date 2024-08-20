@@ -30,10 +30,12 @@ $output_format_instructions$
 """
 
 bedrock_sonnet_model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+bedrock_sonnet_3_5_model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
 
 class BedrockClient:
     def __init__(self, region):
+        logger.info("The bedrock client region is " + region)
         self.region, boto_session = get_boto3_config(region)
         self.bedrock_agent_runtime = boto_session.client('bedrock-agent-runtime')
         self.bedrock_runtime = boto_session.client('bedrock-runtime')
@@ -100,11 +102,12 @@ class BedrockClient:
             )
             raise
 
-    def invoke_claude_3_with_text(self, prompt):
+    def invoke_claude_3_with_text(self, prompt, model_id=bedrock_sonnet_model_id):
         """
         Invokes Anthropic Claude 3 Sonnet to run an inference using the input
         provided in the request body.
 
+        :param model_id: FM under Amazon Bedrock
         :param prompt: The prompt that you want Claude 3 to complete.
         :return: Inference response from the model.
         """
@@ -113,8 +116,8 @@ class BedrockClient:
         client = self.bedrock_runtime
 
         # Invoke Claude 3 with the text prompt
-        model_id = bedrock_sonnet_model_id
-
+        # model_id = bedrock_sonnet_model_id
+        logger.info("Call invoke_claude_3_text with model " + bedrock_sonnet_model_id)
         try:
             response = client.invoke_model(
                 modelId=model_id,

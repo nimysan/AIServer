@@ -3,13 +3,12 @@ from string import Template
 
 from flask import Blueprint, request, current_app, jsonify
 
+from brclient.bedrock_client import bedrock_sonnet_3_5_model_id
+
 bp = Blueprint("bestqi", __name__, url_prefix='/bestqi')
 
 logger = logging.getLogger(__name__)
 
-from string import Template
-name = "Alice"
-age = 25
 intent_prompt = Template('''
 You are a customer service representative. 
 Please perform intent recognition based on the user's submitted content, which includes a subject and content. 
@@ -28,10 +27,56 @@ Please output the intent according to the provided list of intents according the
 The output format should be JSON, and please ensure that the outputted JSON is correctly formatted, including any necessary JSON escape settings, 
 to ensure that the outputted JSON can be parsed correctly.Avoid quotation mark within a quotation mark, 
 if encountering a quotation mark within a quotation mark, it needs to be single quotation mark instead. reason field please use chinese
-The format is as follows:
+find the intent and output as category -  category-sub category-sub category. Only give the best match intent chain and also give the reason.
+
+下面是一个输出的例子:
+<sample-intent-list>
+[
+  {
+    "category": "售前咨询",
+    "description": "顾客还没有成功支付订单，还没有购买商品，咨询产品规格参数、产品功能咨询、寻求折扣、售后政策、产品适配问题、功能是否满足客户需求等问题"
+  },
+  {
+    "category": "产品体验问题",
+    "description": "客户已经购买了商品,对于商品的兼容问题、不符合顾客期望等使用产品的体验反馈。"
+  },
+  {
+    "category": "质量问题,功能问题",
+    "description": "客户对于购买的商品或服务存在不满意的地方,表达了负面情绪。",
+    "sub_categories": [
+      {
+        "category": "不制冰",
+        "description": "无法制冰，加水亮缺水灯等等"
+      },
+      {
+        "category": "不工作",
+        "description": "设备不亮，没有反应"
+      },
+      {
+        "category": "异响",
+        "description": "设备发出很大的声音"
+      },
+      {
+        "category": "其他功能问题",
+        "description": "不属于不制冰、不工作、异响的其他产品功能问题"
+      }
+    ]
+  },
+  {
+    "category": "广告/无意义",
+    "description": "寻求广告、营销、合作的邮件或者回复hello，你好没有意义的句子。"
+  },
+  {
+    "category": "其他问题",
+    "description": "顾客还没有成功支付订单，还没有购买商品，咨询产品规格参数、产品功能咨询、寻求折扣、售后政策、产品适配问题、功能是否满足客户需求等问题。"
+  }
+]
+</sample-intent-list>
+
+Output example:
         {
-            "reason": "xxx",
-            "intent": intent object
+            "intent": "质量问题,功能问题 - 异响"
+            "reason": "xxx", //reason for why match this category
         }
 ''')
 
@@ -204,6 +249,6 @@ def bestqi_intent():
 
     work_region = current_app.config["REGION"]
     bedrock_client = load_bedrock_client(region=work_region)
-    return bedrock_client.invoke_claude_3_with_text(prompt)["content"][0]["text"]
+    return bedrock_client.invoke_claude_3_with_text(prompt, model_id=bedrock_sonnet_3_5_model_id)["content"][0]["text"]
 
 
