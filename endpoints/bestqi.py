@@ -3,7 +3,7 @@ from string import Template
 
 from flask import Blueprint, request, current_app, jsonify
 
-from brclient.bedrock_client import bedrock_sonnet_3_5_model_id
+from brclient.bedrock_client import bedrock_sonnet_3_5_model_id, bedrock_sonnet_model_id
 
 bp = Blueprint("bestqi", __name__, url_prefix='/bestqi')
 
@@ -249,6 +249,6 @@ def bestqi_intent():
 
     work_region = current_app.config["REGION"]
     bedrock_client = load_bedrock_client(region=work_region)
-    return bedrock_client.invoke_claude_3_with_text(prompt, model_id=bedrock_sonnet_3_5_model_id)["content"][0]["text"]
+    return bedrock_client.invoke_claude_3_with_text(prompt, model_id=bedrock_sonnet_model_id)["content"][0]["text"]
 
 
