@@ -1,9 +1,10 @@
 import logging
+import re
 from string import Template
 
 from flask import Blueprint, request, current_app, jsonify
 
-from brclient.bedrock_client import bedrock_sonnet_3_5_model_id, bedrock_sonnet_model_id
+from brclient.bedrock_client import bedrock_sonnet_3_5_model_id, bedrock_sonnet_model_id, bedrock_opus_model_id
 
 bp = Blueprint("bestqi", __name__, url_prefix='/bestqi')
 
@@ -23,62 +24,66 @@ The content of the customer's inquiry is
 $customer_inquiry
 </customer_inquiry>
 
-Please output the intent according to the provided list of intents according the category and category description. your output should provide a complete JSON object. 
-The output format should be JSON, and please ensure that the outputted JSON is correctly formatted, including any necessary JSON escape settings, 
-to ensure that the outputted JSON can be parsed correctly.Avoid quotation mark within a quotation mark, 
-if encountering a quotation mark within a quotation mark, it needs to be single quotation mark instead. reason field please use chinese
-find the intent and output as category -  category-sub category-sub category. Only give the best match intent chain and also give the reason.
+Please read <customer_inquiry> and output intent and reason accounting to above <intent_list>
+please output 2 files, intent and reason.
+1. "intent" find the intent. the intent value must be one of intent from giving <intent_list>。 If a category contains sub-categories, it must match to the final sub-category. The output content should be formatted as category - sub_category - sub_category。
+2. "reason" field. Why the customer_inquiry map the intent
 
-下面是一个输出的例子:
-<sample-intent-list>
-[
-  {
-    "category": "售前咨询",
-    "description": "顾客还没有成功支付订单，还没有购买商品，咨询产品规格参数、产品功能咨询、寻求折扣、售后政策、产品适配问题、功能是否满足客户需求等问题"
-  },
-  {
-    "category": "产品体验问题",
-    "description": "客户已经购买了商品,对于商品的兼容问题、不符合顾客期望等使用产品的体验反馈。"
-  },
-  {
-    "category": "质量问题,功能问题",
-    "description": "客户对于购买的商品或服务存在不满意的地方,表达了负面情绪。",
-    "sub_categories": [
-      {
-        "category": "不制冰",
-        "description": "无法制冰，加水亮缺水灯等等"
-      },
-      {
-        "category": "不工作",
-        "description": "设备不亮，没有反应"
-      },
-      {
-        "category": "异响",
-        "description": "设备发出很大的声音"
-      },
-      {
-        "category": "其他功能问题",
-        "description": "不属于不制冰、不工作、异响的其他产品功能问题"
-      }
-    ]
-  },
-  {
-    "category": "广告/无意义",
-    "description": "寻求广告、营销、合作的邮件或者回复hello，你好没有意义的句子。"
-  },
-  {
-    "category": "其他问题",
-    "description": "顾客还没有成功支付订单，还没有购买商品，咨询产品规格参数、产品功能咨询、寻求折扣、售后政策、产品适配问题、功能是否满足客户需求等问题。"
-  }
-]
-</sample-intent-list>
+the generated output format must be below (不要任何导言，直接输出需要的内容）:  
+intent content with reason by 5 # as the separator; The format as below:
+direct intent string without intent as prefix ##### direct reason string.
 
-Output example:
-        {
-            "intent": "质量问题,功能问题 - 异响"
-            "reason": "xxx", //reason for why match this category
-        }
+sample output:
+
+intent: intent_name ##### reason: string reason
+
 ''')
+import json
+
+
+def process_content(content):
+    try:
+        # 尝试按 ##### 分割内容
+        parts = content.split('#####')
+
+        if len(parts) != 2:
+            raise ValueError("Content does not contain exactly one '#####' separator")
+
+        intent = parts[0].strip()
+        intent = re.sub(r'^intent:\s*', '', intent)
+        reason = parts[1].strip()
+        reason = re.sub(r'^reason:\s*', '', reason)
+
+        # 创建 JSON 对象
+        result = {
+            "intent": intent,
+            "reason": reason
+        }
+
+        # 验证 JSON 是否可以被正确序列化和反序列化
+        json_string = json.dumps(result, ensure_ascii=False)
+        json.loads(json_string)
+
+        return json_string
+
+    except json.JSONDecodeError as e:
+        return json.dumps({
+            "error": "JSON encoding/decoding error",
+            "details": str(e)
+        }, ensure_ascii=False)
+    except ValueError as e:
+        print("##################")
+        print(content)
+        print("@@@@@@@@@@@@@@@@@@")
+        return json.dumps({
+            "error": "Invalid content format",
+            "details": str(e)
+        }, ensure_ascii=False)
+    except Exception as e:
+        return json.dumps({
+            "error": "Unexpected error",
+            "details": str(e)
+        }, ensure_ascii=False)
 
 def remove_rewrite_prompt(string):
     if "_rewrite_prompt" in string:
@@ -249,6 +254,7 @@ def bestqi_intent():
 
     work_region = current_app.config["REGION"]
     bedrock_client = load_bedrock_client(region=work_region)
-    return bedrock_client.invoke_claude_3_with_text(prompt, model_id=bedrock_sonnet_model_id)["content"][0]["text"]
+    # print("------ " + bedrock_opus_model_id)
+    return process_content(bedrock_client.invoke_claude_3_with_text(prompt, model_id=bedrock_sonnet_model_id)["content"][0]["text"])
 
 

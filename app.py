@@ -1,5 +1,6 @@
 import logging
 import os
+from logging.handlers import RotatingFileHandler
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
@@ -7,9 +8,7 @@ from flask_cors import CORS
 # self code
 import config
 from endpoints import register_api_endpoints
-from model import init_model_repository_and_aws_boto3, get_user_repository
-
-from logging.handlers import RotatingFileHandler
+from model import init_model_repository_and_aws_boto3
 
 # 创建一个日志文件处理程序
 file_handler = RotatingFileHandler('flask_app.log', maxBytes=10000, backupCount=5)
@@ -48,9 +47,11 @@ def server_react_as_webui(app):
             return send_from_directory(app.static_folder, 'index.html')
 
 
+
 def create_app():
     # 同时部署/api和ui dashboard
     app = Flask(__name__, static_folder='../ai-frontend/dist')
+    # app = Flask(__name__)
     # some setup
     init_app(app)
 
@@ -64,6 +65,7 @@ def create_app():
         register_api_endpoints(app)  # 参考 https://blog.csdn.net/qq_30117567/article/details/122645987
 
     server_react_as_webui(app)
+
     return app
 
 

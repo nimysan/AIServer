@@ -9,6 +9,8 @@ from endpoints.config_item import bp as config_bp
 from endpoints.user import bp as user_bp
 from endpoints.asr import bp as asr_bp
 from endpoints.bestqi import bp as bestqi_bp
+from endpoints.tools import bp as tools_bp
+from endpoints.tools import api as swagger_api
 
 from security import is_authenticated
 
@@ -26,12 +28,19 @@ def register_api_endpoints(app: Flask):
     api_bp.register_blueprint(config_bp)
     api_bp.register_blueprint(asr_bp)
 
+    api_bp.register_blueprint(tools_bp)
+
     # sample for bestqi
     api_bp.register_blueprint(bestqi_bp)
 
     # Register some normal endpoints
     app.register_blueprint(user_bp)
     app.register_blueprint(api_bp)
+
+    # Register dify tools
+
+    # server_swagger_ui(tools_bp, swagger_api)
+
 
 
 @api_bp.before_request

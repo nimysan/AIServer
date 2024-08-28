@@ -30,6 +30,7 @@ $output_format_instructions$
 """
 
 bedrock_sonnet_model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+bedrock_opus_model_id = "anthropic.claude-3-opus-20240229-v1:0"
 bedrock_sonnet_3_5_model_id = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
 
@@ -114,10 +115,10 @@ class BedrockClient:
 
         # Initialize the Amazon Bedrock runtime client
         client = self.bedrock_runtime
-
+        # print("----->>>>> " +model_id)
         # Invoke Claude 3 with the text prompt
         # model_id = bedrock_sonnet_model_id
-        logger.info("Call invoke_claude_3_text with model " + bedrock_sonnet_model_id)
+        logger.info("Call invoke_claude_3_text with model " + model_id)
         try:
             response = client.invoke_model(
                 modelId=model_id,
@@ -146,9 +147,8 @@ class BedrockClient:
             logger.debug(f"- The output length is {output_tokens} tokens.")
 
             logger.debug(f"- The model returned {len(output_list)} response(s):")
-            for output in output_list:
-                print(output["text"])
-
+            # for output in output_list:
+            #     print(output["text"])
             return result
 
         except ClientError as err:
