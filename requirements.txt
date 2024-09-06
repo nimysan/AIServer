@@ -7,3 +7,4 @@ opensearch-py
 requests-aws4auth
 flask_cors
 langchain==0.1.14
+flask_restx
