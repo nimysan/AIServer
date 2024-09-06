@@ -7,6 +7,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
+
 def load_json(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return json.load(file)
@@ -19,7 +20,6 @@ from bs4 import BeautifulSoup
 
 
 def extract_info(html_content):
-
     soup = BeautifulSoup(html_content, 'html.parser')
     sections = soup.find_all('div', class_='form-section')
 
@@ -33,11 +33,10 @@ def extract_info(html_content):
     return info
 
 
-def process_row(index, row, intent_list, pbar):
+def process_row(index, row, intent_list, pbar, max_retries=5, retry_delay=3):
     global processed_count
     category = row['工单号']
     inquiry = extract_info(row['邮件正文'])
-    # print(inquiry)
 
     data = {
         "intent_list": intent_list,
@@ -45,7 +44,6 @@ def process_row(index, row, intent_list, pbar):
     }
 
     json_data = json.dumps(data)
-    # 'http://test-alb-xsapmdvxs2rj-1584544138.us-east-1.elb.amazonaws.com/api/bestqi/intent',
     curl_command = [
         'curl', '-X', 'POST',
         'http://localhost:5000/api/bestqi/intent',
@@ -54,30 +52,34 @@ def process_row(index, row, intent_list, pbar):
         '-d', json_data
     ]
 
-    try:
-        result = subprocess.run(curl_command, capture_output=True, text=True, check=True)
-        print(result.stdout)
-        # print("----------####----------")
-        response = json.loads(result.stdout)
-        # print(f"xxxx {response['intent']}")
-        processed_count += 1
-        pbar.update(1)
-        pbar.set_description(f"Processed: {processed_count}")
+    for attempt in range(max_retries):
+        try:
+            result = subprocess.run(curl_command, capture_output=True, text=True, check=True)
+            response = json.loads(result.stdout)
 
-        time.sleep(1)
-        return index, category, response['intent'], response['reason']
-    except Exception as e:
-        print(f"Error occurred for category {category}: {e}")
-        processed_count += 1
-        pbar.update(1)
-        pbar.set_description(f"Processed: {processed_count}")
-        time.sleep(3)
-        return index, category, "无法解析返回", str(e)
+            processed_count += 1
+            pbar.update(1)
+            pbar.set_description(f"Processed: {processed_count}")
+
+            return index, category, response['intent'], response['reason']
+        except Exception as e:
+            print(f"Error occurred for category {category} (Attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                print(f"Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+            else:
+                processed_count += 1
+                pbar.update(1)
+                pbar.set_description(f"Processed: {processed_count}")
+                return index, category, "无法解析返回", str(e)
+
+    # This line should never be reached, but just in case
+    return index, category, "无法解析返回", "Maximum retries reached"
 
 
-def main(excel_path, json_path, concurrency):
-    # df = pd.read_excel(excel_path, nrows=10)
-    df = pd.read_excel(excel_path)
+def main(excel_path, json_path, output_path, concurrency):
+    df = pd.read_excel(excel_path, nrows=10)
+    # df = pd.read_excel(excel_path)
     intent_list = load_json(json_path)
 
     results = []
@@ -96,16 +98,18 @@ def main(excel_path, json_path, concurrency):
         df.at[index, 'reason'] = reason
 
     # 保存更新后的DataFrame到新的Excel文件
-    output_path = excel_path.rsplit('.', 1)[0] + '_with_responses.xlsx'
+    output_path = excel_path.rsplit('.', 1)[0] + '_' + output_path + '.xlsx'
     df.to_excel(output_path, index=False)
     print(f"\nResults saved to {output_path}")
 
+
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python script.py <excel_file_path> <json_file_path> <concurrency>")
+    if len(sys.argv) != 5:
+        print("Usage: python script.py <excel_file_path> <json_file_path> <output_path> <concurrency>")
         sys.exit(1)
 
     excel_file = sys.argv[1]
     json_file = sys.argv[2]
-    concurrency = int(sys.argv[3])
-    main(excel_file, json_file, concurrency)
+    output_path = sys.argv[3]
+    concurrency = int(sys.argv[4])
+    main(excel_file, json_file, output_path, concurrency)

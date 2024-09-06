@@ -255,6 +255,6 @@ def bestqi_intent():
     work_region = current_app.config["REGION"]
     bedrock_client = load_bedrock_client(region=work_region)
     # print("------ " + bedrock_opus_model_id)
-    return process_content(bedrock_client.invoke_claude_3_with_text(prompt, model_id=bedrock_sonnet_model_id)["content"][0]["text"])
+    return process_content(bedrock_client.invoke_claude_3_with_text(prompt, model_id=bedrock_sonnet_3_5_model_id)["content"][0]["text"])
 
 
