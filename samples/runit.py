@@ -78,8 +78,8 @@ def process_row(index, row, intent_list, pbar, max_retries=5, retry_delay=3):
 
 
 def main(excel_path, json_path, output_path, concurrency):
-    df = pd.read_excel(excel_path, nrows=10)
-    # df = pd.read_excel(excel_path)
+    # df = pd.read_excel(excel_path, nrows=10)
+    df = pd.read_excel(excel_path)
     intent_list = load_json(json_path)
 
     results = []
