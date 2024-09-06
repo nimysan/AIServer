@@ -33,7 +33,7 @@ def extract_info(html_content):
     return info
 
 
-def process_row(index, row, intent_list, pbar, max_retries=5, retry_delay=3):
+def process_row(index, row, intent_list, pbar, max_retries=5, retry_delay=1):
     global processed_count
     category = row['工单号']
     inquiry = extract_info(row['邮件正文'])
