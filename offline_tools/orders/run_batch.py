@@ -9,34 +9,57 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 # data = {"subject": "Eve", "description": 45}
-template = Template("""你是一个客服服务专员, 正在阅读客户提交的ticket, 你需要从subject和content中提取出来客户反馈内容中的订单信息 
-<ticket_subject>
+template = Template("""您是一个精确的订单识别系统。您的任务是从给定文本中识别并提取订单号。可能的订单号格式如下：
+<samples>
+Amazon	250-2127273-8839034	249-1381907-2244648
+Yaho	jackery-japan-10063258	jackery-japan-10003657
+Rakuten	374756-20240909-0632640638	374756-20191008-00004735
+Shopify-JP	Jackery Japan-202412404410	Jackery Japan-202363447
+Others: 从上下文是否有提到订单号来判断, 包含一些字母数字下划线_-等字符的组合
+<samples>
+严格遵循以下指示：
+
+1. 仅识别完全匹配上述格式的订单号。
+2. 只输出JSON数组，格式为：
+   [
+     {
+       "order_number": "实际找到的订单号",
+       "channel": "对应的渠道名称"
+     },
+     ...
+   ]
+3. 如果没有找到任何匹配的订单号，输出空数组 []。
+4. 不要输出任何解释、注释或额外文字。
+5. 不要使用<samples>中的例子数据，只输出在给定文本中实际找到的订单号， 不要编造订单号。
+6. 确保输出是有效的JSON格式。
+
+分析以下文本并严格按照上述规则提取订单信息：
+<文本开始>
 $subject
-</ticket_subject>
-
-<ticket_description>
 $description
-</<ticket_description>
+<文本结束>
+```
 
-规则：
-1. 从subject和description中提取
-2. 以下是可能出现订单渠道和订单数据格式
-来自于：Amazon	
-250-2127273-8839034	| 249-1381907-2244648
-来自于：Yaho	
-jackery-japan-10063258	| jackery-japan-10003657
-来自于：Rakuten
-374756-20240909-0632640638 |	374756-20191008-00004735
-来自于：Shopify-JP	
-Jackery Japan-202412404410 ｜Jackery Japan-202363447
-3. 输出为json数组的格式例子
-{
-    "channel": Amazon | Yaho | Rakuten | Shopify-JP,
-    "order_number: "Jackery Japan-202412404410"
-}
-4. 如果没有识别出订单， 请输出json空数组 []
-5. 不要任何导言， 直接输出json
 """)
+
+CHANNEL_MAP = {
+
+    "Amazon": "Amazon",
+
+    "Yahoo": "Yahoo",
+
+    "Rakuten": "Rakuten",
+
+    "Shopify-JP": "Shopify-JP"
+
+}
+
+
+def validate_channel(channel):
+    if channel not in CHANNEL_MAP:
+        raise ValueError(f"Invalid channel: {channel}. Must be one of {list(CHANNEL_MAP.keys())}")
+
+    return CHANNEL_MAP[channel]
 
 
 def load_json(file_path):
@@ -56,6 +79,7 @@ def process_row(index, row, pbar, max_retries=2, retry_delay=1):
     prompt = template.substitute(subject=ticket_subject, description=ticket_content)
     data = {
         "input": prompt
+        # "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0"
     }
     json_data = json.dumps(data)
     # print(json_data)
@@ -72,17 +96,15 @@ def process_row(index, row, pbar, max_retries=2, retry_delay=1):
             result = subprocess.run(curl_command, capture_output=True, text=True, check=True)
 
             output = json.loads(result.stdout)
-            # print(f"ffff ---- {output}")
             json_output = output['result']['content'][0]['text']
 
             # print(json_output)
             response = json.loads(json_output)
-            # print("------")
             processed_count += 1
             pbar.update(1)
             pbar.set_description(f"Processed: {processed_count}")
 
-            return index, ticket_subject, response
+            return index, ticket_subject, json.dumps(response)
         except Exception as e:
             print(e)
             print(f"Error occurred for ticket_subject {ticket_subject} (Attempt {attempt + 1}/{max_retries}): {e}")
@@ -102,8 +124,6 @@ def process_row(index, row, pbar, max_retries=2, retry_delay=1):
 def main(excel_path, output_path, concurrency):
     df = pd.read_excel(excel_path, nrows=10)
     # df = pd.read_excel(excel_path)
-    # intent_list = load_json(json_path)
-
     results = []
 
     with tqdm(total=len(df), desc="Processed: 0") as pbar:
@@ -116,8 +136,8 @@ def main(excel_path, output_path, concurrency):
 
     # 将结果添加到DataFrame
     for index, category, orders in results:
-        df.at[index, 'orders'] = orders
-        # df.at[index, 'reason'] = reason
+        # 将orders转换为字符串
+        df.at[index, 'new_order_id_list'] = str(orders)
 
     # 保存更新后的DataFrame到新的Excel文件
     output_path = excel_path.rsplit('.', 1)[0] + '_' + output_path + '.xlsx'
@@ -125,12 +145,13 @@ def main(excel_path, output_path, concurrency):
     print(f"\nResults saved to {output_path}")
 
 
+# 在主程序部分，修正output_path的赋值
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("Usage: python script.py <excel_file_path> <output_path> <concurrency>")
         sys.exit(1)
 
     excel_file = sys.argv[1]
-    output_path = sys.argv[1]
+    output_path = sys.argv[2]  # 修正这里，使用sys.argv[2]而不是sys.argv[1]
     concurrency = int(sys.argv[3])
     main(excel_file, output_path, concurrency)

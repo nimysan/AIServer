@@ -3,9 +3,12 @@ from string import Template
 
 from flask import Blueprint, request, current_app, jsonify
 
+from brclient.bedrock_client import bedrock_sonnet_model_id
+
 bp = Blueprint("bedrock", __name__, url_prefix='/bedrock')
 
 logger = logging.getLogger(__name__)
+
 
 # config_repository = current_app.config_repository
 # config_data = []
@@ -101,6 +104,7 @@ def reload_config():
     config_data = current_app.config_repository.list_all()
     # print(config_data)
 
+
 @bp.route('/rag_with_rewrite', methods=['POST', 'GET'])
 # @require_auth
 def retrieve_and_generate_and_rewrite():
@@ -129,7 +133,7 @@ def retrieve_and_generate_and_rewrite():
     else:
         suggest = bedrock_client.ask_knowledge_base(question, knowledge_base_id, search_filter)
 
-    #是否做改写
+    # 是否做改写
     # refresh config data
     reload_config()
 
@@ -154,13 +158,12 @@ def chat_with_model():
     logger.debug(request.get_data())
     data = request.get_json()
     prompt = data['input']
+    model_id = data.get('model_id', bedrock_sonnet_model_id)
     image_key = "images"
 
     work_region = current_app.config["REGION"]
     bedrock_client = load_bedrock_client(region=work_region)
     if image_key not in data:
-        return jsonify({'result': bedrock_client.invoke_claude_3_with_text(prompt)})
+        return jsonify({'result': bedrock_client.invoke_claude_3_with_text(prompt, model_id)})
     else:
         return jsonify({'result': bedrock_client.invoke_claude_3_with_image_and_text(prompt, data[image_key])})
-
-
