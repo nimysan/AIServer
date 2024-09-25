@@ -6,7 +6,7 @@
 
 ## start server
 ```bash
-python api_server.py
+python app.py
 ```
 
 ## simple test

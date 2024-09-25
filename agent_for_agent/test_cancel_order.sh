@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # 设置API的基础URL
-BASE_URL="http://localhost:5000/api"
+BASE_URL="http://localhost:8000/api"
 
 # 设置API endpoint和方法
-API_ENDPOINT="http://localhost:5000/api/order/cancel"
+API_ENDPOINT="http://localhost:8000/api/order/cancel"
 HTTP_METHOD="POST"
 
 # 设置测试数据
