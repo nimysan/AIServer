@@ -5,9 +5,9 @@ import multiprocessing
 bind = "0.0.0.0:8000"
 
 # 工作进程数
-# workers = multiprocessing.cpu_count() * 2 + 1
+workers = multiprocessing.cpu_count() * 2 + 1
 
-workers = 1
+# workers = 1
 
 # 工作模式
 worker_class = 'sync'
