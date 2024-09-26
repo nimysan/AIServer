@@ -1,0 +1,87 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Customer Order Management API",
+    "description": "Executes API calls based on provided endpoint, method, and input data.",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://cx-api.plaza.red"
+    }
+  ],
+  "paths": {
+    "/api/execute": {
+      "post": {
+        "description": "Execute an API call with specified endpoint, method, and input data",
+        "operationId": "executeApiCall",
+        "parameters": [
+          {
+            "name": "api_endpoint",
+            "in": "query",
+            "description": "The API endpoint to call",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "http_method",
+            "in": "query",
+            "description": "The HTTP method to use for the API call",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH"
+              ]
+            }
+          },
+          {
+            "name": "request_payload",
+            "in": "query",
+            "description": "Input JSON data for the API call",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "Response code"
+                    },
+                    "message": {
+                      "type": "object",
+                      "description": "Response message as JSON"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

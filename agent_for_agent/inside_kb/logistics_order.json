@@ -1,0 +1,164 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Order Logistics Information API",
+    "description": "API for querying logistics information of customer orders",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://cx-api.plaza.red"
+    }
+  ],
+  "paths": {
+    "/api/order/logistics": {
+      "get": {
+        "summary": "Get order logistics information",
+        "description": "Retrieves logistics information for a specific order",
+        "operationId": "getOrderLogistics",
+        "parameters": [
+          {
+            "name": "order_number",
+            "in": "query",
+            "description": "The unique identifier of the order",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved order logistics information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "Response code",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "order_number": {
+                          "type": "string",
+                          "description": "The order number"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "The current status of the order",
+                          "enum": [
+                            "Not Shipped",
+                            "Partially Shipped",
+                            "Fully Shipped"
+                          ],
+                          "example": "Partially Shipped"
+                        },
+                        "shipments": {
+                          "type": "array",
+                          "description": "List of shipments for this order",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "tracking_number": {
+                                "type": "string",
+                                "description": "The tracking number for this shipment"
+                              },
+                              "carrier": {
+                                "type": "string",
+                                "description": "The carrier for this shipment"
+                              },
+                              "status": {
+                                "type": "string",
+                                "description": "The current status of this shipment"
+                              },
+                              "estimated_delivery": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "The estimated delivery date and time"
+                              },
+                              "tracking_url": {
+                                "type": "string",
+                                "description": "URL to track this shipment"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing or invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string",
+                          "description": "Error message"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string",
+                          "description": "Error message",
+                          "example": "Order not found"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

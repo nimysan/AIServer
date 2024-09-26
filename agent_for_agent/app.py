@@ -13,6 +13,7 @@ api = Blueprint('api', __name__, url_prefix="/api")
 # 注册order_cancel Blueprint
 app.register_blueprint(order_endpoint, url_prefix='/api/order')
 
+
 # 健康检查接口
 
 @app.route('/health', methods=['GET'])
@@ -21,6 +22,8 @@ def health_check():
         "status": "healthy",
         "message": "Service is up and running"
     }), 200
+
+
 @api.route('/execute', methods=['POST'])
 def execute_api_call():
     # 获取请求体JSON数据
@@ -56,7 +59,10 @@ def execute_api_call():
         response = requests.request(
             method=http_method,
             url=api_endpoint,
-            json=request_payload
+            json=request_payload,
+            headers={
+                'Content-Type': 'application/json'
+            }
         )
         logging.info("----###----")
         logging.info(response)

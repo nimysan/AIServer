@@ -5,6 +5,7 @@ BASE_URL="http://localhost:8000/api"
 
 # 设置API endpoint和方法
 API_ENDPOINT="http://localhost:8000/api/order/cancel"
+API_ENDPOINT="https://cx-api.plaza.red/api/order/cancel"
 HTTP_METHOD="POST"
 
 # 设置测试数据
