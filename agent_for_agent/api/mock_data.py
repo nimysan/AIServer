@@ -55,7 +55,7 @@ order_logs_data = {
 
                 'status': 'Out for Delivery',
 
-                'estimated_delivery': (datetime.now() + timedelta(days=1)).isoformat(),
+                'estimated_delivery': (datetime.now() + datetime.timedelta(days=1)).isoformat(),
 
                 'tracking_url': 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo=JTXKSDF'
 
