@@ -1,0 +1,140 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Order Cancellation API",
+    "description": "API for cancelling customer orders",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://cx-api.plaza.red"
+    }
+  ],
+  "paths": {
+    "/api/order/cancel": {
+      "post": {
+        "summary": "Cancel an order",
+        "description": "Cancels a customer order based on the provided order number",
+        "operationId": "cancelOrder",
+        "requestBody": {
+          "description": "Order cancellation details",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_number": {
+                    "type": "string",
+                    "description": "The unique identifier of the order to be cancelled"
+                  },
+                  "from_requester": {
+                    "type": "string",
+                    "description": "The identifier of the person or system requesting the cancellation"
+                  }
+                },
+                "required": ["order_number", "from_requester"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order successfully cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "Response code",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "success": {
+                          "type": "boolean",
+                          "description": "Indicates if the cancellation was successful",
+                          "example": true
+                        },
+                        "order_number": {
+                          "type": "string",
+                          "description": "The order number that was cancelled"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "The new status of the order",
+                          "example": "Cancelled"
+                        },
+                        "cancelled_by": {
+                          "type": "string",
+                          "description": "The identifier of who cancelled the order"
+                        }
+                      }
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing parameters or cannot cancel shipped order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string",
+                          "description": "Error message"
+                        }
+                      }
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "error": {
+                          "type": "string",
+                          "description": "Error message",
+                          "example": "Order not found"
+                        }
+                      }
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

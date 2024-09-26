@@ -13,7 +13,14 @@ api = Blueprint('api', __name__, url_prefix="/api")
 # 注册order_cancel Blueprint
 app.register_blueprint(order_endpoint, url_prefix='/api/order')
 
+# 健康检查接口
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({
+        "status": "healthy",
+        "message": "Service is up and running"
+    }), 200
 @api.route('/execute', methods=['POST'])
 def execute_api_call():
     # 获取请求体JSON数据
@@ -21,6 +28,11 @@ def execute_api_call():
 
     # 从JSON数据中获取必要的信息
     api_endpoint = input_data.get('api_endpoint')
+    # 检查并修改 api_endpoint
+    if not api_endpoint.startswith(('http://', 'https://')):
+        api_endpoint = f'https://cx-api.plaza.red{api_endpoint}'
+    logging.info(f"API Endpoint: {api_endpoint}")
+
     http_method = input_data.get('http_method')
     request_payload = input_data.get('request_payload', {})
     logging.info(f"{request_payload}")

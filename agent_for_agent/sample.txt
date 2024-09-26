@@ -1,0 +1,6 @@
+Sample user request:
+
+Dominic Kast, Jul 11, 2024, 12:05 PM Dear Amazon Seller, This is Amazon's Customer Service team. A customer reached out to us with some questions about a purchase they made from you. Here's a description of the issue: Product: B083KBKJ8Q Order number: 114-3614528-8765807 Return requested: Yes Reason for contact: I no longer want the item Please respond to this request within 48 hours. Thanks, Amazon Customer Service https://www.amazon.com/dp/B083KBKJ8Q"
+
+
+"----------------------------------------------\n\nKym Bellard, Jul 9, 2024, 2:55 PM\n\nPlease please cancel this. It’s the wrong item and we have to get another one. We really appreciate it if you will help us.\nASIN: B0BZ8DZ3HR\nhttps://www.amazon.com/dp/B0BZ8DZ3HR" Order number: 114-3614528-8765807
