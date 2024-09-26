@@ -14,8 +14,8 @@ FROM_REQUESTER="customer_service"
 
 echo "Testing Order Cancellation API..."
 curl -X POST "${BASE_URL}/execute" \
-#     -H "Content-Type: application/json" \
-     -d '{
+  -H "Content-Type: application/json" \
+  -d '{
        "api_endpoint": "'"${API_ENDPOINT}"'",
        "http_method": "'"${HTTP_METHOD}"'",
        "request_payload": {
