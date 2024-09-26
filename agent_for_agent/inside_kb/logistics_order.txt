@@ -12,21 +12,28 @@
   ],
   "paths": {
     "/api/order/logistics": {
-      "get": {
+      "post": {
         "summary": "Get order logistics information",
         "description": "Retrieves logistics information for a specific order",
         "operationId": "getOrderLogistics",
-        "parameters": [
-          {
-            "name": "order_number",
-            "in": "query",
-            "description": "The unique identifier of the order",
-            "required": true,
-            "schema": {
-              "type": "string"
+        "requestBody": {
+          "description": "Order logistics details",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "order_number": {
+                    "type": "string",
+                    "description": "The unique identifier of the order"
+                  }
+                },
+                "required": ["order_number"]
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Successfully retrieved order logistics information",

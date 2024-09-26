@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 import logging
+from mock_data import order_logs_data
 
 # 设置日志
 logging.basicConfig(level=logging.INFO)
@@ -12,6 +13,7 @@ orders = {
     'ORD12345': {'status': 'Active', 'customer': 'John Doe'},
     'ORD67890': {'status': 'Shipped', 'customer': 'Jane Smith'},
 }
+
 
 @order_endpoint.route('/cancel', methods=['POST'])
 def cancel_order():
@@ -58,4 +60,46 @@ def cancel_order():
             'status': 'Cancelled',
             'cancelled_by': from_requester
         }
+    }), 200
+
+
+@order_endpoint.route('/logistics', methods=['POST'])
+def get_order_logistics():
+    logger.info('------->get_order_logistics cancellation request')
+    data = request.json
+    order_number = data.get('order_number')
+    if not order_number:
+        return jsonify({
+
+            'code': 400,
+
+            'message': {'error': 'Missing required parameter: order_number'}
+
+        }), 400
+
+    if order_number not in order_logs_data:
+        return jsonify({
+
+            'code': 404,
+
+            'message': {'error': 'Order not found'}
+
+        }), 404
+
+    order_info = order_logs_data[order_number]
+
+    return jsonify({
+
+        'code': 200,
+
+        'message': {
+
+            'order_number': order_number,
+
+            'status': order_info['status'],
+
+            'shipments': order_info['shipments']
+
+        }
+
     }), 200
