@@ -1,4 +1,5 @@
 # 模拟订单数据
+import datetime
 
 order_logs_data = {
 
@@ -16,7 +17,7 @@ order_logs_data = {
 
                 'status': 'In Transit',
 
-                'estimated_delivery': (datetime.now() + timedelta(days=2)).isoformat(),
+                'estimated_delivery': (datetime.now() + datetime.timedelta(days=2)).isoformat(),
 
                 'tracking_url': 'https://tracking.yamato-transport.com/jizen/servlet/tracking?number=S231231412412414'
 
