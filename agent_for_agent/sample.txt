@@ -4,3 +4,12 @@ Dominic Kast, Jul 11, 2024, 12:05 PM Dear Amazon Seller, This is Amazon's Custom
 
 
 "----------------------------------------------\n\nKym Bellard, Jul 9, 2024, 2:55 PM\n\nPlease please cancel this. It’s the wrong item and we have to get another one. We really appreciate it if you will help us.\nASIN: B0BZ8DZ3HR\nhttps://www.amazon.com/dp/B0BZ8DZ3HR" Order number: 114-3614528-8765807
+
+--- 查询物流 ---
+Hello, I'd like to know when my order will arrive?  Order number: 114-3614528-8765807
+
+----
+
+
+## sample api key
+app-22rGlxQJopqiOpZPfhKnMqfm
