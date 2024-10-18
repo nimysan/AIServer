@@ -170,7 +170,7 @@ def get_order_logistics():
 
     }), 200
 mock_order = {
-    "order_123": {
+    "250-2127273-8839034": {
         "status": "pending",
         "items": [
             {
