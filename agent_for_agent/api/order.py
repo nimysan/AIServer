@@ -169,3 +169,93 @@ def get_order_logistics():
         }
 
     }), 200
+mock_order = {
+    "order_123": {
+        "status": "pending",
+        "items": [
+            {
+                "product_id": "product_1",
+                "name": "Product 1",
+                "price": 10.99,
+                "quantity": 2
+            },
+            {
+                "product_id": "product_2",
+                "name": "Product 2",
+                "price": 15.99,
+                "quantity": 1
+            }
+        ],
+        "shipments": []
+    },
+    "order_456": {
+        "status": "shipped",
+        "items": [
+            {
+                "product_id": "product_3",
+                "name": "Product 3",
+                "price": 20.99,
+                "quantity": 3
+            },
+            {
+                "product_id": "product_4",
+                "name": "Product 4",
+                "price": 25.99,
+                "quantity": 2
+            }
+        ],
+        "shipments": [
+            {
+                "tracking_number": "ABC123",
+                "carrier": "FedEx"
+            }
+        ]
+    }
+}
+@order_endpoint.route('/update_order_items', methods=['POST'])
+def update_order_items():
+    logger.info('------->update_order_items request')
+    data = request.json
+    order_number = data.get('order_number')
+    items = data.get('items')
+
+    # 检查是否提供了必需的参数
+    if not order_number or not items:
+        return jsonify({
+            'code': 400,
+            'message': {'error': 'Missing required parameters: order_number or items'}
+        }), 400
+
+    # 检查订单是否存在
+    if order_number not in mock_order:
+        return jsonify({
+            'code': 404,
+            'message': {'error': 'Order not found'}
+        }), 404
+
+    # 修改订单中的商品项目数量
+    order_info = mock_order[order_number]
+    for item in items:
+        product_id = item.get('product_id')
+        new_quantity = item.get('quantity')
+
+        # 检查商品项目是否存在于订单中
+        if product_id not in [item['product_id'] for item in order_info['items']]:
+            return jsonify({
+                'code': 404,
+                'message': {'error': f'Product {product_id} not found in order'}
+            }), 404
+
+        # 更新商品项目的数量
+        for order_item in order_info['items']:
+            if order_item['product_id'] == product_id:
+                order_item['quantity'] = new_quantity
+                break
+
+    return jsonify({
+        'code': 200,
+        'message': {
+            'order_number': order_number,
+            'updated_items': order_info['items']
+        }
+    }), 200
