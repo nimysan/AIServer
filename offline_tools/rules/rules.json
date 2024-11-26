@@ -1,0 +1,178 @@
+{
+    "modify_order_item_details": {
+        "not_converted": {
+            "1": {
+                "shopify": {
+                    "rule_for_handle": "该订单未支付或者预售订单,请等待客服处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "open"
+                },
+                "others": {
+                    "rule_for_handle": "该订单未支付或者预售订单,请等待客服处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "open"
+                }
+            },
+            "0": {
+                "shopify": {
+                    "rule_for_handle": "该订单未支付或者预售订单,请等待客服处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "open"
+                },
+                "others": {
+                    "rule_for_handle": "该订单未支付或者预售订单,请等待客服处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "open"
+                }
+            }
+        },
+        "canceled": {
+            "1": {
+                "shopify": {
+                    "rule_for_handle": "订单已取消,不支持处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                },
+                "others": {
+                    "rule_for_handle": "订单已取消,不支持处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            },
+            "0": {
+                "shopify": {
+                    "rule_for_handle": "订单已取消,不支持处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                },
+                "others": {
+                    "rule_for_handle": "订单已取消,不支持处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            }
+        }
+    },
+    "modify_delivery_address": {
+        "pending": {
+            "1": {
+                "shopify": {
+                    "rule_for_handle": "可尝试联系shopify单后重新下单",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                },
+                "others": {
+                    "rule_for_handle": "不支持处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            },
+            "0": {
+                "shopify": {
+                    "rule_for_handle": "可尝试联系shopify单后重新下单",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                },
+                "others": {
+                    "rule_for_handle": "不支持处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            }
+        }
+    },
+    "modify_delivery_time": {
+        "pending": {
+            "1": {
+                "shopify": {
+                    "rule_for_handle": "可尝试联系shopify单后重新下单",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                },
+                "others": {
+                    "rule_for_handle": "不支持处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            },
+            "0": {
+                "shopify": {
+                    "rule_for_handle": "可尝试联系shopify单后重新下单",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                },
+                "others": {
+                    "rule_for_handle": "不支持处理",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            }
+        },
+        "awaiting_shipment": {
+            "0": {
+                "shopify": {
+                    "rule_for_handle": "给出具体时间后， 人工客服操作",
+                    "customer_reply_rule": "给出具体时间后， 人工客服操作",
+                    "agent_action": "等待客户给出具体时间，去相应系统手工更新",
+                    "target_ticket_status": "solved"
+                }
+            },
+            "1": {
+                "others": {
+                    "rule_for_handle": "不支持任何订单操作",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            }
+        }
+    },
+    "decrease_order_item_quantity": {
+        "canceled": {
+            "1": {
+                "shopify": {
+                    "rule_for_handle": "订单已取消,提供物流信息,建议用户自行联系物流公司",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                },
+                "others": {
+                    "rule_for_handle": "订单已取消,提供物流信息,建议用户自行联系物流公司",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            },
+            "0": {
+                "shopify": {
+                    "rule_for_handle": "订单已取消,提供物流信息,建议用户自行联系物流公司",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                },
+                "others": {
+                    "rule_for_handle": "订单已取消,提供物流信息,建议用户自行联系物流公司",
+                    "customer_reply_rule": "",
+                    "agent_action": "",
+                    "target_ticket_status": "solved"
+                }
+            }
+        }
+    }
+}
