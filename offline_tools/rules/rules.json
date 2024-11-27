@@ -1,176 +1,122 @@
 {
-    "modify_order_item_details": {
-        "not_converted": {
-            "1": {
-                "shopify": {
-                    "rule_for_handle": "该订单未支付或者预售订单,请等待客服处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "open"
-                },
-                "others": {
-                    "rule_for_handle": "该订单未支付或者预售订单,请等待客服处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "open"
-                }
-            },
-            "0": {
-                "shopify": {
-                    "rule_for_handle": "该订单未支付或者预售订单,请等待客服处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "open"
-                },
-                "others": {
-                    "rule_for_handle": "该订单未支付或者预售订单,请等待客服处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "open"
-                }
-            }
-        },
-        "canceled": {
-            "1": {
-                "shopify": {
-                    "rule_for_handle": "订单已取消,不支持处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
-                },
-                "others": {
-                    "rule_for_handle": "订单已取消,不支持处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
-                }
-            },
-            "0": {
-                "shopify": {
-                    "rule_for_handle": "订单已取消,不支持处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
-                },
-                "others": {
-                    "rule_for_handle": "订单已取消,不支持处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
-                }
-            }
-        }
-    },
     "modify_delivery_address": {
-        "pending": {
-            "1": {
-                "shopify": {
-                    "rule_for_handle": "可尝试联系shopify单后重新下单",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
+        "Shipped": {
+            "true": {
+                "Shopify": {
+                    "rule_for_handle": "该订单已发货，无法处理",
+                    "customer_reply_rule": "该订单已发货，请联系物流公司确认，提供该订单物流单号",
+                    "agent_action": "无需处理",
                     "target_ticket_status": "solved"
                 },
-                "others": {
-                    "rule_for_handle": "不支持处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
+                "Others": {
+                    "rule_for_handle": "该订单已发货，无法处理",
+                    "customer_reply_rule": "该订单已发货，请联系物流公司确认，提供该订单物流单号",
+                    "agent_action": "无需处理",
                     "target_ticket_status": "solved"
                 }
             },
-            "0": {
-                "shopify": {
-                    "rule_for_handle": "可尝试联系shopify单后重新下单",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
+            "false": {
+                "Shopify": {
+                    "rule_for_handle": "该订单已发货，无法处理",
+                    "customer_reply_rule": "该订单已发货，请联系物流公司确认，提供该订单物流单号",
+                    "agent_action": "无需处理",
                     "target_ticket_status": "solved"
                 },
-                "others": {
-                    "rule_for_handle": "不支持处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
-                }
-            }
-        }
-    },
-    "modify_delivery_time": {
-        "pending": {
-            "1": {
-                "shopify": {
-                    "rule_for_handle": "可尝试联系shopify单后重新下单",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
-                },
-                "others": {
-                    "rule_for_handle": "不支持处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
-                }
-            },
-            "0": {
-                "shopify": {
-                    "rule_for_handle": "可尝试联系shopify单后重新下单",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
-                },
-                "others": {
-                    "rule_for_handle": "不支持处理",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
+                "Others": {
+                    "rule_for_handle": "该订单已发货，无法处理",
+                    "customer_reply_rule": "该订单已发货，请联系物流公司确认，提供该订单物流单号",
+                    "agent_action": "无需处理",
                     "target_ticket_status": "solved"
                 }
             }
         },
-        "awaiting_shipment": {
-            "0": {
-                "shopify": {
-                    "rule_for_handle": "给出具体时间后， 人工客服操作",
-                    "customer_reply_rule": "给出具体时间后， 人工客服操作",
-                    "agent_action": "等待客户给出具体时间，去相应系统手工更新",
-                    "target_ticket_status": "solved"
+        "Pending": {
+            "true": {
+                "Shopify": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
+                },
+                "Others": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
                 }
             },
-            "1": {
-                "others": {
-                    "rule_for_handle": "不支持任何订单操作",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
+            "false": {
+                "Shopify": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
+                },
+                "Others": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
                 }
             }
-        }
-    },
-    "decrease_order_item_quantity": {
-        "canceled": {
-            "1": {
-                "shopify": {
-                    "rule_for_handle": "订单已取消,提供物流信息,建议用户自行联系物流公司",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
+        },
+        "Awaiting Allocation": {
+            "true": {
+                "Shopify": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
                 },
-                "others": {
-                    "rule_for_handle": "订单已取消,提供物流信息,建议用户自行联系物流公司",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
+                "Others": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
                 }
             },
-            "0": {
-                "shopify": {
-                    "rule_for_handle": "订单已取消,提供物流信息,建议用户自行联系物流公司",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
+            "false": {
+                "Shopify": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
                 },
-                "others": {
-                    "rule_for_handle": "订单已取消,提供物流信息,建议用户自行联系物流公司",
-                    "customer_reply_rule": "",
-                    "agent_action": "",
-                    "target_ticket_status": "solved"
+                "Others": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
+                }
+            }
+        },
+        "Ready to Ship": {
+            "true": {
+                "Shopify": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
+                },
+                "Others": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
+                }
+            },
+            "false": {
+                "Shopify": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
+                },
+                "Others": {
+                    "rule_for_handle": "1.如果用户提及了要修改的地址、姓名或者电话号码,尝试拦截订单\n2.如果未提及要修改的信息，仅需跟用户确认，无需拦截订单",
+                    "customer_reply_rule": "1.我们尝试拦截订单，但是拦截失败(Failed Interception)，我们无法修改配送地址，请联系物流公司确认，提供该订单物流单号\n2.我们正在尝试拦截订单（Not Intercepted、Intercepting、Partial Success、Successful Interception），请等待客服处理",
+                    "agent_action": "1.订单拦截失败、无需处理\n2.请确认订单拦截结果，并跟进处理",
+                    "target_ticket_status": "1.solved\n2.open"
                 }
             }
         }
