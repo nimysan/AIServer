@@ -8,36 +8,44 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
-# data = {"subject": "Eve", "description": 45}
-template = Template("""您是一个精确的订单识别系统。您的任务是从给定文本中识别并提取订单号。可能的订单号格式如下：
-<samples>
-Amazon	250-2127273-8839034	249-1381907-2244648
-Yaho	jackery-japan-10063258	jackery-japan-10003657
-Rakuten	374756-20240909-0632640638	374756-20191008-00004735
-Shopify-JP	Jackery Japan-202412404410	Jackery Japan-202363447
-Others: 从上下文是否有提到订单号来判断, 包含一些字母数字下划线_-等字符的组合
-<samples>
-严格遵循以下指示：
+template = Template("""
+您是一个精确的订单识别系统。您的任务是从给定文本中识别并提取订单号。
 
-1. 仅识别完全匹配上述格式的订单号。
-2. 只输出JSON数组，格式为：
-   [
-     {
-       "order_number": "实际找到的订单号",
-       "channel": "对应的渠道名称"
-     },
-     ...
-   ]
-3. 如果没有找到任何匹配的订单号，输出空数组 []。
-4. 不要输出任何解释、注释或额外文字。
-5. 不要使用<samples>中的例子数据，只输出在给定文本中实际找到的订单号， 不要编造订单号。
-6. 确保输出是有效的JSON格式。
-
-分析以下文本并严格按照上述规则提取订单信息：
-<文本开始>
+分析<ticket_content>内容并严格按照以下规则提取提到的订单号信息：
+<ticket_content>
 $subject
 $description
-<文本结束>
+</ticket_content>
+
+
+可能的订单号格式如下：
+    Amazon: 由三组数字组成，每组之间用连字符分隔，格式为三组数字，如111-2222222-3333333
+    Yahoo: 完整格式为"jackery-japan-"后跟数字
+    Rakuten: 多组数字，以连字符分隔，通常包含日期信息
+    Shopify-JP: 完整格式为"Jackery Japan-"后跟数字
+    Others: 根据上下文明确提到的订单号，可能包含字母、数字、下划线和连字符的组合
+严格遵循以下指示：
+
+    1. 按照以上格式识别可能存在的订单号， 订单号的内容必须完全来自于<ticket_content>中
+    2. 只输出JSON数组，格式为：
+    [
+    {
+    "order_number": "实际找到的订单号",
+    "channel": "对应的渠道名称"
+    },
+    ...
+    ]
+    3. 如果没有找到任何匹配的订单号，输出空数组 []。
+    4. 不要输出任何解释、注释、占位符或额外文字。
+    5. 绝对不要编造、推测订单号或使用示例数据，只返回文本中明确存在的订单号。
+    6. 确保输出是有效的JSON格式。
+    7. 在输出前，仔细检查每个识别到的订单号是否确实出现在原文中，并完全符合指定的格式。
+    8. 不要将电话号码、日期或其他数字序列误认为订单号。
+    9. 不要将邮件地址识别为订单号.
+    10. 只有在文本明确提到订单号或订单编号时，才考虑将其识别为"Others"类型的订单号。
+    11. 如果对某个可能的订单号有任何疑问，宁可不输出也不要输出不确定的信息。
+
+
 ```
 
 """)
@@ -70,7 +78,7 @@ def load_json(file_path):
 processed_count = 0
 
 
-def process_row(index, row, pbar, max_retries=2, retry_delay=1):
+def process_row(index, row, pbar, max_retries=5, retry_delay=1):
     global processed_count
     ticket_subject = row['Ticket subject']
     ticket_content = row['Ticket - Description']
@@ -79,6 +87,7 @@ def process_row(index, row, pbar, max_retries=2, retry_delay=1):
     prompt = template.substitute(subject=ticket_subject, description=ticket_content)
     data = {
         "input": prompt
+        # ,
         # "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0"
     }
     json_data = json.dumps(data)
@@ -88,7 +97,8 @@ def process_row(index, row, pbar, max_retries=2, retry_delay=1):
         'http://localhost:5000/api/bedrock/chat',
         '-H', 'Content-Type: application/json',
         '-H', 'Authorization: Basic YWRtaW46KGBnSHBOfjI=',
-        '-d', json_data
+        '-d', json_data,
+        '--max-time', '10'  # 设置10秒超时
     ]
 
     for attempt in range(max_retries):
@@ -122,36 +132,63 @@ def process_row(index, row, pbar, max_retries=2, retry_delay=1):
 
 
 def main(excel_path, output_path, concurrency):
-    df = pd.read_excel(excel_path, nrows=10)
-    # df = pd.read_excel(excel_path)
+    df = pd.read_excel(excel_path)
+
     results = []
 
     with tqdm(total=len(df), desc="Processed: 0") as pbar:
+
         with ThreadPoolExecutor(max_workers=concurrency) as executor:
+
             future_to_index = {executor.submit(process_row, index, row, pbar): index
+
                                for index, row in df.iterrows()}
+
             for future in as_completed(future_to_index):
-                index, category, orders = future.result()
-                results.append((index, category, orders))
+
+                try:
+
+                    index, category, orders = future.result(timeout=60)  # 5分钟超时
+
+                    results.append((index, category, orders))
+
+                except TimeoutError:
+
+                    print(f"Task for index {future_to_index[future]} timed out")
+
+                except Exception as exc:
+
+                    print(f"Task for index {future_to_index[future]} generated an exception: {exc}")
+
+                finally:
+
+                    pbar.update(1)
 
     # 将结果添加到DataFrame
+
     for index, category, orders in results:
-        # 将orders转换为字符串
         df.at[index, 'new_order_id_list'] = str(orders)
 
     # 保存更新后的DataFrame到新的Excel文件
+
     output_path = excel_path.rsplit('.', 1)[0] + '_' + output_path + '.xlsx'
+
     df.to_excel(output_path, index=False)
+
     print(f"\nResults saved to {output_path}")
 
 
-# 在主程序部分，修正output_path的赋值
 if __name__ == "__main__":
+
     if len(sys.argv) != 4:
         print("Usage: python script.py <excel_file_path> <output_path> <concurrency>")
+
         sys.exit(1)
 
     excel_file = sys.argv[1]
-    output_path = sys.argv[2]  # 修正这里，使用sys.argv[2]而不是sys.argv[1]
+
+    output_path = sys.argv[2]
+
     concurrency = int(sys.argv[3])
+
     main(excel_file, output_path, concurrency)
